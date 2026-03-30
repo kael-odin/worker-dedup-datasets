@@ -6,10 +6,10 @@
  * 版本: v1.0.0
  */
 
-const dedupAfterLoadFn = require('./dedup-after-load');
-const dedupAsLoadingFn = require('./dedup-as-loading');
-const { loadState, saveState, parseFilePath } = require('./utils');
-const { MODES } = require('./consts');
+const dedupAfterLoadFn = require('./src/dedup-after-load');
+const dedupAsLoadingFn = require('./src/dedup-as-loading');
+const { loadState, saveState, parseFilePath } = require('./src/utils');
+const { MODES } = require('./src/consts');
 
 const { DEDUP_AFTER_LOAD, DEDUP_AS_LOADING } = MODES;
 
@@ -17,10 +17,10 @@ const { DEDUP_AFTER_LOAD, DEDUP_AS_LOADING } = MODES;
 let cafesdk;
 if (process.env.LOCAL_DEV === '1') {
     // 本地开发环境
-    cafesdk = require('../sdk_local');
+    cafesdk = require('./sdk_local');
 } else {
     // 云端环境 - 使用真实的 Cafe SDK
-    cafesdk = require('../sdk');
+    cafesdk = require('./sdk');
 }
 
 async function main() {

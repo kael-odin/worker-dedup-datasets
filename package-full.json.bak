@@ -1,0 +1,40 @@
+{
+  "name": "worker-dedup-datasets",
+  "version": "1.0.0",
+  "description": "CafeScraper Worker - Dataset deduplication and merge tool with support for JSON/JSONL files, field-based deduplication, and custom transformations",
+  "main": "src/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node test/test.js",
+    "test:all": "node test/comprehensive-test.js"
+  },
+  "keywords": [
+    "cafescraper",
+    "worker",
+    "dedup",
+    "deduplication",
+    "merge",
+    "transform",
+    "dataset",
+    "json",
+    "jsonl",
+    "data-processing"
+  ],
+  "author": "kael-odin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kael-odin/worker-dedup-datasets.git"
+  },
+  "dependencies": {
+    "big-set": "^1.0.2",
+    "bluebird": "^3.7.2",
+    "@grpc/grpc-js": "^1.13.4",
+    "google-protobuf": "^4.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,8 +1,10 @@
-const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState, mapWithConcurrency } = require('./utils-minimal');
+const BigSet = require('big-set');
+const bluebird = require('bluebird');
+const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState } = require('./utils');
 const { UPLOAD_SLEEP_MS } = require('./consts');
 
 /**
- * 边加载边去重模式（最小化版本 - 不使用big-set和bluebird）
+ * 边加载边去重模式
  */
 module.exports = async ({
     dataSourceType,
@@ -24,8 +26,7 @@ module.exports = async ({
     appendFileSource,
     cafesdk,
 }) => {
-    // 使用原生 Set（限制数据集大小）
-    const dedupSet = new Set();
+    const dedupSet = new BigSet();
 
     // 初始化数据源级推送状态
     if (!pushState.sources) {
@@ -67,8 +68,8 @@ module.exports = async ({
         }));
     }
 
-    // 并行处理所有数据源（使用mapWithConcurrency替代bluebird.map）
-    await mapWithConcurrency(dataSources, async (source) => {
+    // 并行处理所有数据源
+    await bluebird.map(dataSources, async (source) => {
         const sourceKey = source.id.replace(/[^a-zA-Z0-9]/g, '_');
 
         // 初始化该数据源的状态
@@ -155,7 +156,7 @@ module.exports = async ({
             await cafesdk.log.info(`数据源处理完成: ${source.id} - 加载 ${items.length} 条,输出 ${finalItems.length} 条`);
         }
 
-    }, parallelLoads);
+    }, { concurrency: parallelLoads });
 
     const loadTime = Math.round((Date.now() - loadStart) / 1000);
 

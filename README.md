@@ -58,8 +58,16 @@ npm start
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `inputFiles` | array | List of JSON/JSONL files to process |
-| `fields` | array | Fields to use for deduplication |
+| `fields` | array | Fields to use for deduplication (e.g., `["id"]` or `["name", "price"]`) |
+
+#### Data Source Parameters (Choose One)
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `dataSourceType` | string | Data source type: `"direct-input"`, `"network-url"`, or `"cafe-dataset"` |
+| `inputData` | string | JSON array data (when `dataSourceType="direct-input"`) |
+| `inputUrls` | array | URL list of data files (when `dataSourceType="network-url"`) |
+| `datasetIds` | array | Cafe Dataset ID list (when `dataSourceType="cafe-dataset"`) |
 
 #### Optional Parameters
 
@@ -69,9 +77,9 @@ npm start
 | `output` | string | `"unique-items"` | Output type: `unique-items`, `duplicate-items`, or `nothing` |
 | `mode` | string | `"dedup-after-load"` | Processing mode |
 | `fieldsToLoad` | array | `[]` | Only load specified fields to save memory |
-| `preDedupTransformFunction` | string | `"async (items) => items"` | JavaScript function to transform data before deduplication |
-| `postDedupTransformFunction` | string | `"async (items) => items"` | JavaScript function to transform data after deduplication |
-| `customInputData` | object | `{}` | Custom data object passed to transform functions |
+| `preDedupTransformFunction` | string | `""` | JavaScript function to transform data before deduplication |
+| `postDedupTransformFunction` | string | `""` | JavaScript function to transform data after deduplication |
+| `customInputData` | string | `""` | Custom data object (JSON) passed to transform functions |
 | `nullAsUnique` | boolean | `false` | Treat null/undefined values as unique |
 | `parallelLoads` | integer | `10` | Number of parallel file loads (1-100) |
 | `parallelPushes` | integer | `5` | Number of parallel data pushes (1-50, forced to 1 in streaming mode) |
@@ -81,26 +89,38 @@ npm start
 
 ### 💡 Usage Examples
 
-#### Example 1: Basic Deduplication
+#### Example 1: Direct Input (Simplest)
 
 ```json
 {
-  "inputFiles": [
-    { "url": "file:///data/batch1.json" },
-    { "url": "file:///data/batch2.json" }
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"id\": 1, \"name\": \"iPhone\"}, {\"id\": 1, \"name\": \"iPhone\"}, {\"id\": 2, \"name\": \"iPad\"}]",
+  "fields": ["id"]
+}
+```
+
+**Result:** 2 unique items (iPhone, iPad)
+
+#### Example 2: Network URL (Multiple Files)
+
+```json
+{
+  "dataSourceType": "network-url",
+  "inputUrls": [
+    { "url": "https://example.com/batch1.json" },
+    { "url": "https://example.com/batch2.json" }
   ],
   "fields": ["id"],
   "output": "unique-items"
 }
 ```
 
-#### Example 2: Multi-field Deduplication
+#### Example 3: Multi-field Deduplication
 
 ```json
 {
-  "inputFiles": [
-    { "url": "file:///products.json" }
-  ],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"name\": \"iPhone\", \"price\": 999}, {\"name\": \"iPhone\", \"price\": 999}, {\"name\": \"iPhone\", \"price\": 899}]",
   "fields": ["name", "price"]
 }
 ```
@@ -112,25 +132,27 @@ npm start
 { "name": "iPhone", "price": 899 }  // Unique (different price)
 ```
 
-#### Example 3: Data Transformation
+#### Example 4: Data Transformation
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///raw-data.json" }],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"id\": 1, \"price\": -10}, {\"id\": 2, \"price\": 100}]",
   "fields": ["id"],
-  "preDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.filter(item => item.price > 0);\n}",
-  "postDedupTransformFunction": "async (items) => {\n  return items.map(item => ({\n    ...item,\n    processedAt: new Date().toISOString()\n  }));\n}",
-  "customInputData": {
-    "minPrice": 100
-  }
+  "preDedupTransformFunction": "async (items, customInputData) => {\n  return items.filter(item => item.price > 0);\n}",
+  "postDedupTransformFunction": "async (items) => {\n  return items.map(item => ({...item, processedAt: Date.now()}));\n}",
+  "customInputData": "{\"minPrice\": 0}"
 }
 ```
 
-#### Example 4: Large Dataset Processing (>100K records)
+**Result:** Only item with id=2 is kept (price > 0 filter)
+
+#### Example 5: Large Dataset Processing (>100K records)
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///large-dataset.jsonl" }],
+  "dataSourceType": "network-url",
+  "inputUrls": [{ "url": "https://example.com/large-dataset.jsonl" }],
   "inputFormat": "jsonl",
   "fields": ["id"],
   "mode": "dedup-as-loading",
@@ -146,13 +168,26 @@ npm start
 - Use `fieldsToLoad` to load only necessary fields
 - Increase `batchSize` to 10000-50000
 
-#### Example 5: Find Duplicates
+#### Example 6: Find Duplicates
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///data.json" }],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"email\": \"a@test.com\"}, {\"email\": \"a@test.com\"}, {\"email\": \"b@test.com\"}]",
   "fields": ["email"],
   "output": "duplicate-items"
+}
+```
+
+**Result:** 1 duplicate item (a@test.com)
+
+#### Example 7: Cafe Dataset Source
+
+```json
+{
+  "dataSourceType": "cafe-dataset",
+  "datasetIds": ["dataset-id-1", "dataset-id-2"],
+  "fields": ["id"]
 }
 ```
 
@@ -328,8 +363,16 @@ npm start
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
-| `inputFiles` | array | 需要处理的 JSON/JSONL 文件列表 |
-| `fields` | array | 用于去重的字段列表 |
+| `fields` | array | 用于去重的字段列表（例如 `["id"]` 或 `["name", "price"]`） |
+
+#### 数据来源参数（三选一）
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `dataSourceType` | string | 数据来源类型：`"direct-input"`、`"network-url"` 或 `"cafe-dataset"` |
+| `inputData` | string | JSON 数组数据（当 `dataSourceType="direct-input"` 时） |
+| `inputUrls` | array | 数据文件 URL 列表（当 `dataSourceType="network-url"` 时） |
+| `datasetIds` | array | Cafe Dataset ID 列表（当 `dataSourceType="cafe-dataset"` 时） |
 
 #### 可选参数
 
@@ -339,9 +382,9 @@ npm start
 | `output` | string | `"unique-items"` | 输出类型: `unique-items`、`duplicate-items` 或 `nothing` |
 | `mode` | string | `"dedup-after-load"` | 处理模式 |
 | `fieldsToLoad` | array | `[]` | 仅加载指定字段以节省内存 |
-| `preDedupTransformFunction` | string | `"async (items) => items"` | 去重前的数据转换函数 |
-| `postDedupTransformFunction` | string | `"async (items) => items"` | 去重后的数据转换函数 |
-| `customInputData` | object | `{}` | 传递给转换函数的自定义数据对象 |
+| `preDedupTransformFunction` | string | `""` | 去重前的数据转换函数 |
+| `postDedupTransformFunction` | string | `""` | 去重后的数据转换函数 |
+| `customInputData` | string | `""` | 传递给转换函数的自定义数据对象（JSON格式） |
 | `nullAsUnique` | boolean | `false` | 将 null/undefined 值视为唯一值 |
 | `parallelLoads` | integer | `10` | 并行加载文件数 (1-100) |
 | `parallelPushes` | integer | `5` | 并行推送数据数 (1-50, 流式模式下固定为 1) |
@@ -351,26 +394,38 @@ npm start
 
 ### 💡 使用示例
 
-#### 示例 1: 基础去重
+#### 示例 1: 直接输入（最简单）
 
 ```json
 {
-  "inputFiles": [
-    { "url": "file:///data/batch1.json" },
-    { "url": "file:///data/batch2.json" }
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"id\": 1, \"name\": \"iPhone\"}, {\"id\": 1, \"name\": \"iPhone\"}, {\"id\": 2, \"name\": \"iPad\"}]",
+  "fields": ["id"]
+}
+```
+
+**结果：** 2个唯一项（iPhone, iPad）
+
+#### 示例 2: 网络 URL（多文件）
+
+```json
+{
+  "dataSourceType": "network-url",
+  "inputUrls": [
+    { "url": "https://example.com/batch1.json" },
+    { "url": "https://example.com/batch2.json" }
   ],
   "fields": ["id"],
   "output": "unique-items"
 }
 ```
 
-#### 示例 2: 多字段组合去重
+#### 示例 3: 多字段组合去重
 
 ```json
 {
-  "inputFiles": [
-    { "url": "file:///products.json" }
-  ],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"name\": \"iPhone\", \"price\": 999}, {\"name\": \"iPhone\", \"price\": 999}, {\"name\": \"iPhone\", \"price\": 899}]",
   "fields": ["name", "price"]
 }
 ```
@@ -382,25 +437,27 @@ npm start
 { "name": "iPhone", "price": 899 }  // 唯一（价格不同）
 ```
 
-#### 示例 3: 数据转换
+#### 示例 4: 数据转换
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///raw-data.json" }],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"id\": 1, \"price\": -10}, {\"id\": 2, \"price\": 100}]",
   "fields": ["id"],
-  "preDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.filter(item => item.price > 0);\n}",
-  "postDedupTransformFunction": "async (items) => {\n  return items.map(item => ({\n    ...item,\n    processedAt: new Date().toISOString()\n  }));\n}",
-  "customInputData": {
-    "minPrice": 100
-  }
+  "preDedupTransformFunction": "async (items, customInputData) => {\n  return items.filter(item => item.price > 0);\n}",
+  "postDedupTransformFunction": "async (items) => {\n  return items.map(item => ({...item, processedAt: Date.now()}));\n}",
+  "customInputData": "{\"minPrice\": 0}"
 }
 ```
 
-#### 示例 4: 大数据集处理 (>10万条)
+**结果：** 仅保留 id=2 的数据（price > 0 过滤）
+
+#### 示例 5: 大数据集处理 (>10万条)
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///large-dataset.jsonl" }],
+  "dataSourceType": "network-url",
+  "inputUrls": [{ "url": "https://example.com/large-dataset.jsonl" }],
   "inputFormat": "jsonl",
   "fields": ["id"],
   "mode": "dedup-as-loading",
@@ -416,13 +473,26 @@ npm start
 - 使用 `fieldsToLoad` 仅加载必要字段
 - 将 `batchSize` 增大到 10000-50000
 
-#### 示例 5: 查找重复项
+#### 示例 6: 查找重复项
 
 ```json
 {
-  "inputFiles": [{ "url": "file:///data.json" }],
+  "dataSourceType": "direct-input",
+  "inputData": "[{\"email\": \"a@test.com\"}, {\"email\": \"a@test.com\"}, {\"email\": \"b@test.com\"}]",
   "fields": ["email"],
   "output": "duplicate-items"
+}
+```
+
+**结果：** 1个重复项（a@test.com）
+
+#### 示例 7: Cafe Dataset 数据源
+
+```json
+{
+  "dataSourceType": "cafe-dataset",
+  "datasetIds": ["dataset-id-1", "dataset-id-2"],
+  "fields": ["id"]
 }
 ```
 

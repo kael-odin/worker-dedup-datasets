@@ -1,51 +1,50 @@
 const fs = require('fs').promises;
 const path = require('path');
-const axios = require('axios');
+const http = require('http');
+const https = require('https');
 const { STATE_DIR } = require('./consts');
 
 // Allow insecure HTTPS connections (required for Cafe proxy environment)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 /**
- * Get proxy configuration for axios
+ * Get proxy configuration
  * Supports Cafe cloud environment (PROXY_AUTH) and standard proxy env vars
  */
 function getProxyConfig(targetUrl) {
     // Check Cafe-specific PROXY_AUTH (for cloud environment)
     if (process.env.PROXY_AUTH) {
-        const [username, password] = process.env.PROXY_AUTH.split(':');
         return {
+            type: 'cafe',
             host: 'proxy-inner.cafescraper.com',
             port: 6000,
-            auth: {
-                username: username,
-                password: password
-            }
+            auth: process.env.PROXY_AUTH,
         };
     }
 
     // Check standard proxy environment variables
+    const isHttps = targetUrl.startsWith('https:');
     const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy ||
                      process.env.HTTP_PROXY || process.env.http_proxy ||
                      process.env.ALL_PROXY || process.env.all_proxy;
 
     if (proxyUrl) {
         try {
-            const url = new URL(proxyUrl);
+            const proxyParsed = new URL(proxyUrl);
             return {
-                host: url.hostname,
-                port: url.port || (url.protocol === 'https:' ? 443 : 80),
-                auth: url.username && url.password ? {
-                    username: url.username,
-                    password: url.password
-                } : undefined
+                type: 'standard',
+                host: proxyParsed.hostname,
+                port: proxyParsed.port || (proxyParsed.protocol === 'https:' ? 443 : 80),
+                auth: proxyParsed.username && proxyParsed.password
+                    ? `${proxyParsed.username}:${proxyParsed.password}`
+                    : null,
             };
         } catch (e) {
             console.warn(`Invalid proxy URL: ${proxyUrl}`);
         }
     }
 
-    return undefined;
+    return null;
 }
 
 /**
@@ -119,15 +118,7 @@ async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
     }
     
     try {
-        const proxyConfig = getProxyConfig(url);
-        
-        const response = await axios.get(url, {
-            proxy: proxyConfig,
-            timeout: 30000,
-            responseType: 'text'
-        });
-        
-        const data = response.data;
+        const data = await fetchUrl(url);
         
         // 自动检测格式
         let detectedFormat = format;
@@ -165,14 +156,184 @@ async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
         
         return items;
     } catch (error) {
-        if (error.response) {
-            throw new Error(`加载URL失败 ${url}: HTTP ${error.response.status}`);
-        } else if (error.code === 'ECONNABORTED') {
-            throw new Error(`加载URL超时 ${url}`);
-        } else {
-            throw new Error(`加载URL失败 ${url}: ${error.message}`);
-        }
+        throw new Error(`加载URL失败 ${url}: ${error.message}`);
     }
+}
+
+/**
+ * Fetch URL with proxy support (using HTTP CONNECT for HTTPS)
+ */
+async function fetchUrl(url, timeout = 30000) {
+    const zlib = require('zlib');
+    const { promisify } = require('util');
+    const tls = require('tls');
+    const net = require('net');
+    const gunzip = promisify(zlib.gunzip);
+    const inflate = promisify(zlib.inflate);
+    const brotliDecompress = promisify(zlib.brotliDecompress);
+
+    return new Promise((resolve, reject) => {
+        const proxyConfig = getProxyConfig(url);
+
+        const requestHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cache-Control': 'no-cache',
+        };
+
+        const timeoutId = setTimeout(() => {
+            reject(new Error(`Request timeout after ${timeout}ms`));
+        }, timeout);
+
+        const decompressResponse = async (buffer, encoding) => {
+            try {
+                switch (encoding) {
+                    case 'gzip':
+                        return await gunzip(buffer);
+                    case 'deflate':
+                        return await inflate(buffer);
+                    case 'br':
+                        return await brotliDecompress(buffer);
+                    default:
+                        return buffer;
+                }
+            } catch (err) {
+                console.warn(`Decompression failed (${encoding}): ${err.message}`);
+                return buffer;
+            }
+        };
+
+        const handleResponse = async (response) => {
+            clearTimeout(timeoutId);
+            const chunks = [];
+
+            response.on('data', (chunk) => {
+                chunks.push(chunk);
+            });
+
+            response.on('end', async () => {
+                try {
+                    const buffer = Buffer.concat(chunks);
+                    const encoding = response.headers['content-encoding'];
+                    const decompressed = await decompressResponse(buffer, encoding);
+                    const data = decompressed.toString('utf8');
+
+                    resolve(data);
+                } catch (e) {
+                    reject(new Error(`Error processing response: ${e.message}`));
+                }
+            });
+
+            response.on('error', (err) => {
+                clearTimeout(timeoutId);
+                reject(err);
+            });
+        };
+
+        const handleError = (err) => {
+            clearTimeout(timeoutId);
+            reject(err);
+        };
+
+        if (proxyConfig) {
+            const { type, host, port, auth } = proxyConfig;
+            
+            console.log(`[PROXY] Using proxy ${host}:${port} (${type}) for ${url}`);
+
+            const targetUrl = new URL(url);
+            const isHttps = targetUrl.protocol === 'https:';
+
+            const proxyReq = http.request({
+                host: host,
+                port: port,
+                method: 'CONNECT',
+                path: `${targetUrl.hostname}:${targetUrl.port || (isHttps ? 443 : 80)}`,
+                headers: auth ? {
+                    'Proxy-Authorization': `Basic ${Buffer.from(auth).toString('base64')}`,
+                } : {},
+            });
+
+            proxyReq.on('connect', (proxyRes, socket) => {
+                if (proxyRes.statusCode !== 200) {
+                    clearTimeout(timeoutId);
+                    reject(new Error(`Proxy CONNECT failed with status ${proxyRes.statusCode}`));
+                    return;
+                }
+
+                console.log(`[PROXY] CONNECT successful for ${targetUrl.hostname}`);
+
+                if (isHttps) {
+                    const tlsOptions = {
+                        socket: socket,
+                        servername: targetUrl.hostname,
+                        rejectUnauthorized: false,
+                        ALPNProtocols: ['http/1.1'],
+                    };
+
+                    const tlsSocket = tls.connect(tlsOptions);
+
+                    const tlsTimeout = setTimeout(() => {
+                        tlsSocket.destroy();
+                        handleError(new Error('TLS handshake timeout'));
+                    }, 10000);
+
+                    tlsSocket.on('secureConnect', () => {
+                        clearTimeout(tlsTimeout);
+                        console.log(`[PROXY] TLS handshake successful`);
+
+                        const request = https.get({
+                            hostname: targetUrl.hostname,
+                            port: targetUrl.port || 443,
+                            path: `${targetUrl.pathname}${targetUrl.search}`,
+                            headers: requestHeaders,
+                            createConnection: () => tlsSocket,
+                        }, handleResponse);
+
+                        request.on('error', handleError);
+                    });
+
+                    tlsSocket.on('error', (err) => {
+                        clearTimeout(tlsTimeout);
+                        handleError(err);
+                    });
+                } else {
+                    const request = http.get({
+                        hostname: targetUrl.hostname,
+                        port: targetUrl.port || 80,
+                        path: `${targetUrl.pathname}${targetUrl.search}`,
+                        headers: requestHeaders,
+                        createConnection: () => socket,
+                    }, handleResponse);
+
+                    request.on('error', handleError);
+                }
+            });
+
+            proxyReq.on('error', (err) => {
+                console.error(`[PROXY] CONNECT error: ${err.message}`);
+                handleError(err);
+            });
+
+            proxyReq.end();
+        } else {
+            console.log('[PROXY] No proxy configured, direct request');
+            const protocol = url.startsWith('https:') ? https : http;
+            const req = protocol.get(
+                url,
+                {
+                    headers: requestHeaders,
+                    timeout: timeout,
+                },
+                handleResponse
+            );
+            req.on('error', handleError);
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new Error('Request timeout'));
+            });
+        }
+    });
 }
 
 /**

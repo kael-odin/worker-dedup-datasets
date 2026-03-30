@@ -1,29 +1,60 @@
 {
-  "description": "数据集去重与合并工具 - 支持从多个 JSON/JSONL 文件加载数据,基于字段组合去重,并支持自定义转换函数。功能包括:数据合并、字段去重、数据转换、两种处理模式(先加载后去重/边加载边去重),支持大数据集处理(10M+条记录)。\n\nDataset Deduplication & Merge Tool - Load data from multiple JSON/JSONL files, deduplicate based on field combinations, and support custom transformation functions. Features: data merging, field deduplication, data transformation, two processing modes (dedup-after-load/dedup-as-loading), large dataset support (10M+ records).",
-  "b": "inputFiles",
+  "description": "数据集去重与合并工具 - 支持多种数据导入方式（直接输入/URL/Dataset），基于字段组合去重，支持大数据集处理(10M+条记录)。\n\nDataset Deduplication & Merge Tool - Supports multiple data import methods (direct input/URL/Dataset), field-based deduplication, large dataset support (10M+ records).",
+  "b": "dataSourceType",
   "properties": [
     {
-      "title": "输入文件列表 / Input Files",
-      "name": "inputFiles",
+      "title": "数据来源类型 / Data Source Type",
+      "name": "dataSourceType",
+      "type": "string",
+      "editor": "select",
+      "description": "选择数据导入方式。\n\n• 直接输入数据：在下方直接粘贴 JSON 数组数据\n• 网络URL：从可访问的网络URL加载数据\n• Cafe Dataset：从Cafe平台的Dataset加载数据\n\nSelect data import method.\n\n• Direct Input: Paste JSON array data directly below\n• Network URL: Load data from accessible network URLs\n• Cafe Dataset: Load data from Cafe platform Dataset",
+      "default": "direct-input",
+      "options": [
+        { "label": "直接输入数据 / Direct Input", "value": "direct-input" },
+        { "label": "网络URL / Network URL", "value": "network-url" },
+        { "label": "Cafe Dataset ID", "value": "cafe-dataset" }
+      ],
+      "required": true
+    },
+    {
+      "title": "直接输入数据 / Direct Input Data",
+      "name": "inputData",
+      "type": "array",
+      "editor": "json",
+      "description": "直接粘贴 JSON 数组数据。示例格式：\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]\n\nPaste JSON array data directly. Example format:\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]",
+      "default": []
+    },
+    {
+      "title": "网络数据URL列表 / Network Data URLs",
+      "name": "inputUrls",
       "type": "array",
       "editor": "requestList",
-      "description": "需要合并和去重的 JSON/JSONL 文件路径列表。每个文件应包含 JSON 数组或 JSONL 格式的数据。\n\nList of JSON/JSONL file paths to merge and deduplicate. Each file should contain a JSON array or JSONL format data.",
-      "required": true
+      "description": "网络可访问的数据文件URL列表。支持 HTTP/HTTPS 协议，JSON 和 JSONL 格式。\n\nList of network-accessible data file URLs. Supports HTTP/HTTPS protocols, JSON and JSONL formats.",
+      "default": []
+    },
+    {
+      "title": "Cafe Dataset ID 列表 / Cafe Dataset IDs",
+      "name": "datasetIds",
+      "type": "array",
+      "editor": "stringList",
+      "description": "Cafe平台的Dataset ID列表。示例：[\"dataset_123\", \"dataset_456\"]\n\nList of Cafe platform Dataset IDs. Example: [\"dataset_123\", \"dataset_456\"]",
+      "default": []
     },
     {
       "title": "去重字段 / Deduplication Fields",
       "name": "fields",
       "type": "array",
       "editor": "stringList",
-      "description": "用于判断重复的字段名称列表。多个字段组合判断,字段越多去重越严格。例如:['id'] 表示按 id 去重,['name','price'] 表示按 name+price 组合去重。留空则不进行去重。\n\nList of field names for deduplication. Multiple fields are combined, more fields means stricter deduplication. Example: ['id'] for dedup by id, ['name','price'] for dedup by name+price combination. Leave empty to skip deduplication.",
-      "default": []
+      "description": "用于判断重复的字段名称列表。多个字段组合判断，字段越多去重越严格。例如：['id'] 表示按 id 去重，['name','price'] 表示按 name+price 组合去重。留空则不进行去重。\n\nList of field names for deduplication. Multiple fields are combined, more fields means stricter deduplication. Example: ['id'] for dedup by id, ['name','price'] for dedup by name+price combination. Leave empty to skip deduplication.\n\n⚠️ 注意：字段名必须与数据中的字段名完全一致（区分大小写）。如果字段不存在，将导致错误。\n\n⚠️ Note: Field names must exactly match the field names in the data (case-sensitive). If the field does not exist, it will cause an error.",
+      "default": [],
+      "required": true
     },
     {
       "title": "输入文件格式 / Input File Format",
       "name": "inputFormat",
       "type": "string",
       "editor": "select",
-      "description": "输入文件的格式。JSON 表示包含数组的 JSON 文件,JSONL 表示每行一个 JSON 对象的文件。(自动检测: 根据文件扩展名 .json/.jsonl 自动识别)\n\nInput file format. JSON means JSON file with array, JSONL means one JSON object per line. (Auto-detect: automatically recognized by .json/.jsonl file extension)",
+      "description": "输入数据的格式。JSON 表示包含数组的 JSON 文件，JSONL 表示每行一个 JSON 对象的文件。（自动检测：根据文件扩展名 .json/.jsonl 自动识别）\n\nInput data format. JSON means JSON file with array, JSONL means one JSON object per line. (Auto-detect: automatically recognized by .json/.jsonl file extension)",
       "default": "json",
       "options": [
         { "label": "JSON (数组格式 / Array format)", "value": "json" },
@@ -35,7 +66,7 @@
       "name": "output",
       "type": "string",
       "editor": "select",
-      "description": "选择要输出的内容类型。'唯一项'输出去重后的数据,'重复项'输出被判定为重复的数据,'仅统计'只显示统计信息不输出数据。\n\nSelect output content type. 'Unique items' outputs deduplicated data, 'Duplicate items' outputs data judged as duplicates, 'Statistics only' shows only statistics without data output.",
+      "description": "选择要输出的内容类型。'唯一项'输出去重后的数据，'重复项'输出被判定为重复的数据，'仅统计'只显示统计信息不输出数据。\n\nSelect output content type. 'Unique items' outputs deduplicated data, 'Duplicate items' outputs data judged as duplicates, 'Statistics only' shows only statistics without data output.",
       "default": "unique-items",
       "options": [
         { "label": "唯一项(去重后的数据) / Unique Items", "value": "unique-items" },
@@ -48,7 +79,7 @@
       "name": "mode",
       "type": "string",
       "editor": "select",
-      "description": "去重处理模式。'先加载后去重'会先加载所有数据再去重,保持原始顺序但内存占用高;'边加载边去重'在加载时就去重,内存占用低但不保证顺序。大数据集(>10万条)建议使用后者。\n\nDeduplication processing mode. 'Dedup after load' loads all data first then deduplicates, preserves order but high memory usage; 'Dedup as loading' deduplicates during loading, low memory usage but order not guaranteed. Recommended for large datasets (>100K records).",
+      "description": "去重处理模式。'先加载后去重'会先加载所有数据再去重，保持原始顺序但内存占用高；'边加载边去重'在加载时就去重，内存占用低但不保证顺序。大数据集(>10万条)建议使用后者。\n\nDeduplication processing mode. 'Dedup after load' loads all data first then deduplicates, preserves order but high memory usage; 'Dedup as loading' deduplicates during loading, low memory usage but order not guaranteed. Recommended for large datasets (>100K records).\n\n💡 数据规模建议 / Data Scale Recommendations:\n- < 1万条: dedup-after-load (速度快，内存足够)\n- 1-10万条: dedup-after-load (推荐，除非内存有限)\n- > 10万条: dedup-as-loading (节省内存)\n- > 100万条: 必须使用 dedup-as-loading + fieldsToLoad",
       "default": "dedup-after-load",
       "options": [
         { "label": "先加载后去重(高内存,保持顺序) / Dedup After Load", "value": "dedup-after-load" },
@@ -60,7 +91,7 @@
       "name": "fieldsToLoad",
       "type": "array",
       "editor": "stringList",
-      "description": "(可选)仅加载指定字段以减少内存占用和提升速度。留空则加载所有字段。注意:去重字段必须包含在内。\n\n(Optional) Load only specified fields to reduce memory usage and improve speed. Leave empty to load all fields. Note: deduplication fields must be included.",
+      "description": "(可选)仅加载指定字段以减少内存占用和提升速度。留空则加载所有字段。\n\n⚠️ 重要：如果设置了 fieldsToLoad，则'去重字段'必须全部包含在 fieldsToLoad 中，否则会报错。\n\n(Optional) Load only specified fields to reduce memory usage and improve speed. Leave empty to load all fields.\n\n⚠️ Important: If fieldsToLoad is set, all 'deduplication fields' must be included in fieldsToLoad, otherwise an error will occur.",
       "default": []
     },
     {
@@ -68,7 +99,7 @@
       "name": "preDedupTransformFunction",
       "type": "string",
       "editor": "textarea",
-      "description": "去重前对数据进行自定义转换的 JavaScript 函数。函数签名为: async (items, { customInputData }) => { return items; }。可用于过滤、修改或添加字段。\n\nJavaScript function to custom transform data before deduplication. Function signature: async (items, { customInputData }) => { return items; }. Can be used to filter, modify or add fields.",
+      "description": "去重前对数据进行自定义转换的 JavaScript 函数。函数签名为: async (items, { customInputData }) => { return items; }。可用于过滤、修改或添加字段。\n\nJavaScript function to custom transform data before deduplication. Function signature: async (items, { customInputData }) => { return items; }. Can be used to filter, modify or add fields.\n\n💡 提示：建议在函数中添加 try-catch 错误处理，避免因个别数据格式错误导致整个任务失败。\n\n💡 Tip: It's recommended to add try-catch error handling in the function to avoid the entire task failing due to individual data format errors.",
       "default": "async (items, { customInputData }) => {\n    return items;\n}"
     },
     {
@@ -92,7 +123,7 @@
       "name": "nullAsUnique",
       "type": "boolean",
       "editor": "switch",
-      "description": "如果开启,去重字段的 null/undefined 值将被视为唯一值(不与其他 null 重复)。默认关闭,null 值会被判定为重复。\n\nIf enabled, null/undefined values in deduplication fields will be treated as unique (not duplicate with other nulls). Default is disabled, null values will be judged as duplicates.",
+      "description": "如果开启，去重字段的 null/undefined 值将被视为唯一值(不与其他 null 重复)。默认关闭，null 值会被判定为重复。\n\nIf enabled, null/undefined values in deduplication fields will be treated as unique (not duplicate with other nulls). Default is disabled, null values will be judged as duplicates.",
       "default": false
     },
     {
@@ -100,7 +131,7 @@
       "name": "parallelLoads",
       "type": "integer",
       "editor": "number",
-      "description": "并行加载文件的线程数。增加此值可加快加载速度,但会增加内存占用。\n\nNumber of parallel file loading threads. Increasing this value speeds up loading but increases memory usage.",
+      "description": "并行加载数据源的线程数。增加此值可加快加载速度，但会增加内存占用。\n\nNumber of parallel data source loading threads. Increasing this value speeds up loading but increases memory usage.\n\n💡 建议配置 / Recommended Settings:\n- 小数据源(<10MB): 20-50\n- 中等数据源(10-100MB): 10-20\n- 大数据源(>100MB): 5-10",
       "default": 10,
       "minimum": 1,
       "maximum": 100
@@ -110,7 +141,7 @@
       "name": "parallelPushes",
       "type": "integer",
       "editor": "number",
-      "description": "并行推送数据到输出的线程数。增加此值可加快输出速度。注意:边加载边去重模式下此值固定为 1。\n\nNumber of parallel data push threads. Increasing this value speeds up output. Note: In dedup-as-loading mode this value is fixed to 1.",
+      "description": "并行推送数据到输出的线程数。增加此值可加快输出速度。注意：边加载边去重模式下此值固定为 1。\n\nNumber of parallel data push threads. Increasing this value speeds up output. Note: In dedup-as-loading mode this value is fixed to 1.",
       "default": 5,
       "minimum": 1,
       "maximum": 50
@@ -120,7 +151,7 @@
       "name": "batchSize",
       "type": "integer",
       "editor": "number",
-      "description": "每次处理的批次大小。大数据集建议使用较小批次(如 1000-5000)以减少内存峰值。\n\nBatch size for each processing. For large datasets, use smaller batches (e.g., 1000-5000) to reduce memory peaks.",
+      "description": "每次处理的批次大小。大数据集建议使用较小批次(如 1000-5000)以减少内存峰值。\n\nBatch size for each processing. For large datasets, use smaller batches (e.g., 1000-5000) to reduce memory peaks.\n\n💡 建议配置 / Recommended Settings:\n- 小数据集(<1万条): 10000-20000\n- 中等数据集(1-10万条): 5000-10000\n- 大数据集(>10万条): 1000-5000",
       "default": 5000,
       "minimum": 100,
       "maximum": 50000
@@ -130,7 +161,7 @@
       "name": "appendFileSource",
       "type": "boolean",
       "editor": "switch",
-      "description": "在每个数据项中添加 __fileSource__ 字段,记录该数据来自哪个文件。对转换函数和追踪数据来源有用。\n\nAdd __fileSource__ field to each data item to record which file the data came from. Useful for transform functions and tracking data source.",
+      "description": "在每个数据项中添加 __fileSource__ 字段，记录该数据来自哪个数据源。对转换函数和追踪数据来源有用。\n\nAdd __fileSource__ field to each data item to record which data source the data came from. Useful for transform functions and tracking data source.",
       "default": false
     },
     {
@@ -138,7 +169,7 @@
       "name": "verboseLog",
       "type": "boolean",
       "editor": "switch",
-      "description": "开启详细日志输出。大数据集可能导致日志过多,建议仅在调试时开启。\n\nEnable detailed log output. Large datasets may cause excessive logs, recommended only for debugging.",
+      "description": "开启详细日志输出。大数据集可能导致日志过多，建议仅在调试时开启。\n\nEnable detailed log output. Large datasets may cause excessive logs, recommended only for debugging.",
       "default": false
     }
   ]

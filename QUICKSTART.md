@@ -11,15 +11,23 @@ npm install
 
 ### Step 2: Prepare Your Data
 
-Export your Apify dataset to JSON:
+Prepare your data files in JSON or JSONL format:
 
-```bash
-# Using Apify CLI
-apify dataset:export YOUR_DATASET_ID --format json > mydata.json
-
-# Or download from Apify Console
-# Dataset → Export → JSON format
+**JSON Format:**
+```json
+[
+  {"id": 1, "name": "Item 1", "price": 100},
+  {"id": 2, "name": "Item 2", "price": 200}
+]
 ```
+
+**JSONL Format:**
+```
+{"id": 1, "name": "Item 1", "price": 100}
+{"id": 2, "name": "Item 2", "price": 200}
+```
+
+Save your data file to an accessible location.
 
 ### Step 3: Configure Input
 

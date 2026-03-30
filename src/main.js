@@ -1,9 +1,9 @@
 /**
  * Dedup Datasets Worker - 主入口
- * 
+ *
  * 功能: 从多个 JSON/JSONL 文件加载数据,基于字段组合去重,支持自定义转换函数
  * 平台: CafeScraper
- * 改造自: Apify dedup-datasets actor
+ * 版本: v1.0.0
  */
 
 const dedupAfterLoadFn = require('./dedup-after-load');

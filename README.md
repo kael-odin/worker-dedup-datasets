@@ -21,7 +21,7 @@
 
 ### Overview
 
-Dedup Datasets Worker is a powerful tool for merging and deduplicating datasets from multiple JSON/JSONL files. Originally migrated from [Apify dedup-datasets actor](https://github.com/metalwarrior665/actor-dedup-datasets), this worker is fully optimized for the CafeScraper platform with enhanced features and robust error handling.
+Dedup Datasets Worker is a powerful tool for merging and deduplicating datasets from multiple JSON/JSONL files. Fully optimized for the CafeScraper platform with enhanced features and robust error handling.
 
 ### ✨ Key Features
 
@@ -174,15 +174,28 @@ npm start
 4. **Enable Parallel Loading**: Increase `parallelLoads` for faster processing
 5. **File Format Auto-detection**: Worker automatically detects `.jsonl` files regardless of `inputFormat`
 
-### ⚠️ Platform Differences
+### 📁 Data Preparation
 
-| Feature | Apify Version | Cafe Version | Impact |
-|---------|--------------|--------------|--------|
-| **Data Input** | Apify Dataset API | JSON/JSONL Files | ⚠️ Requires data export first |
-| **Data Output** | Dataset API | Result API | ✅ Works normally |
-| **State Persistence** | KeyValueStore | File System | ✅ Works normally |
-| **Migration Recovery** | ✅ Automatic | ⚠️ Simplified | Periodic state saving |
-| **Deduplication Logic** | ✅ Fully preserved | ✅ Fully preserved | No difference |
+Before using this worker, you need to prepare your data files:
+
+**JSON Format:**
+```json
+[
+  {"id": 1, "name": "Item 1"},
+  {"id": 2, "name": "Item 2"}
+]
+```
+
+**JSONL Format:**
+```
+{"id": 1, "name": "Item 1"}
+{"id": 2, "name": "Item 2"}
+```
+
+**Supported Data Sources:**
+- Local files (file:///path/to/data.json)
+- Network accessible files
+- Cloud storage URLs
 
 ### 🐛 Troubleshooting
 
@@ -249,11 +262,11 @@ cat outputs/logs.txt
 ### 📝 Changelog
 
 #### v1.0.0 (2026-03-30)
-- ✅ Migrated from Apify to CafeScraper platform
-- ✅ Added JSON/JSONL file support with auto-detection
-- ✅ Implemented state persistence to file system
-- ✅ Fixed Windows path handling issues
-- ✅ Added comprehensive test suite (3 scenarios)
+- ✅ Initial release
+- ✅ JSON/JSONL file support with auto-detection
+- ✅ State persistence to file system
+- ✅ Cross-platform path handling (Windows/Unix)
+- ✅ Comprehensive test suite (8 scenarios)
 - ✅ Optimized for CafeScraper cloud environment
 - ✅ Enhanced error handling and logging
 
@@ -273,7 +286,7 @@ kael-odin
 
 ### 概述
 
-Dedup Datasets Worker 是一个强大的数据集合并和去重工具，可以从多个 JSON/JSONL 文件加载数据并基于字段组合进行去重。本项目从 [Apify dedup-datasets actor](https://github.com/metalwarrior665/actor-dedup-datasets) 迁移而来，针对 CafeScraper 平台进行了全面优化，增强了功能并改进了错误处理。
+Dedup Datasets Worker 是一个强大的数据集合并和去重工具，可以从多个 JSON/JSONL 文件加载数据并基于字段组合进行去重。针对 CafeScraper 平台进行了全面优化，增强了功能并改进了错误处理。
 
 ### ✨ 核心特性
 
@@ -426,15 +439,28 @@ npm start
 4. **开启并行加载**: 增加 `parallelLoads` 加快处理
 5. **文件格式自动检测**: Worker 会根据 `.jsonl` 扩展名自动识别格式，不受 `inputFormat` 参数限制
 
-### ⚠️ 平台差异说明
+### 📁 数据准备
 
-| 功能 | Apify 版本 | Cafe 版本 | 影响 |
-|------|-----------|-----------|------|
-| **数据输入** | Apify Dataset API | JSON/JSONL 文件 | ⚠️ 需先导出数据 |
-| **数据输出** | Dataset API | Result API | ✅ 功能正常 |
-| **状态持久化** | KeyValueStore | 文件系统 | ✅ 功能正常 |
-| **迁移恢复** | ✅ 自动 | ⚠️ 简化版 | 定期保存状态 |
-| **去重逻辑** | ✅ 完全保留 | ✅ 完全保留 | 无差异 |
+使用本 worker 前，需要准备数据文件：
+
+**JSON 格式：**
+```json
+[
+  {"id": 1, "name": "项目 1"},
+  {"id": 2, "name": "项目 2"}
+]
+```
+
+**JSONL 格式：**
+```
+{"id": 1, "name": "项目 1"}
+{"id": 2, "name": "项目 2"}
+```
+
+**支持的数据源：**
+- 本地文件 (file:///path/to/data.json)
+- 网络可访问文件
+- 云存储 URL
 
 ### 🐛 故障排查
 
@@ -501,11 +527,11 @@ cat outputs/logs.txt
 ### 📝 更新日志
 
 #### v1.0.0 (2026-03-30)
-- ✅ 完成从 Apify 到 CafeScraper 平台的迁移
-- ✅ 添加 JSON/JSONL 文件支持及自动检测
-- ✅ 实现文件系统状态持久化
-- ✅ 修复 Windows 路径处理问题
-- ✅ 新增综合测试套件（3个场景）
+- ✅ 首次发布
+- ✅ JSON/JSONL 文件支持及自动检测
+- ✅ 文件系统状态持久化
+- ✅ 跨平台路径处理 (Windows/Unix)
+- ✅ 综合测试套件（8个场景）
 - ✅ 针对 CafeScraper 云环境优化
 - ✅ 增强错误处理和日志记录
 

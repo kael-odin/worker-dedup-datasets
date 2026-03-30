@@ -32,9 +32,10 @@ async function main() {
 
         // 解析输入参数
         let {
-            dataSourceType = 'direct-input',
+            dataSourceType,
             inputData = '[]',
             inputUrls = [],
+            inputFiles = [], // 向后兼容旧参数
             datasetIds = [],
             inputFormat = 'json',
             fields = [],
@@ -51,6 +52,20 @@ async function main() {
             appendFileSource = false,
             verboseLog = false,
         } = inputJson;
+
+        // 向后兼容：如果提供了 inputFiles 但没有 dataSourceType，自动推断
+        if (!dataSourceType) {
+            if (inputFiles && inputFiles.length > 0) {
+                // 将 inputFiles 转换为 inputUrls
+                inputUrls = inputFiles.map(f => ({ url: f.url || f }));
+                dataSourceType = 'network-url';
+                await cafesdk.log.info('检测到旧格式参数 inputFiles，已自动转换为 network-url 模式');
+            } else if (parsedInputData && parsedInputData.length > 0) {
+                dataSourceType = 'direct-input';
+            } else {
+                dataSourceType = 'direct-input';
+            }
+        }
 
         // 解析 JSON 字符串字段
         let parsedInputData;

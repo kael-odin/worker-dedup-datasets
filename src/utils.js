@@ -65,9 +65,15 @@ async function loadFromFile(filePath, format = 'json', fieldsToLoad = null) {
 }
 
 /**
- * 从网络URL加载数据
+ * 从网络URL或本地文件加载数据
  */
 async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
+    // 支持 file:// 协议
+    if (url.startsWith('file://')) {
+        const filePath = parseFilePath(url);
+        return loadFromFile(filePath, format, fieldsToLoad);
+    }
+    
     return new Promise((resolve, reject) => {
         const client = url.startsWith('https') ? https : http;
         
@@ -191,7 +197,7 @@ async function loadState(key) {
 }
 
 /**
- * 去重逻辑 - 使用原生Set（简化版，不支持大数据集）
+ * 去重逻辑
  */
 function dedup({ items, output, fields, dedupSet, nullAsUnique = false }) {
     if (!fields || fields.length === 0) {
@@ -240,7 +246,7 @@ function sleep(ms) {
 }
 
 /**
- * 并发控制 - 替代bluebird.map
+ * 并发控制 - 实现类似bluebird.map的并发控制
  */
 async function mapWithConcurrency(items, mapper, concurrency = 10) {
     const results = [];

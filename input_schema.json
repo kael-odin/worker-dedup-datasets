@@ -1,5 +1,5 @@
 {
-  "description": "数据集去重与合并工具 - 支持多种数据导入方式（直接输入/URL/Dataset），基于字段组合去重，支持大数据集处理(10M+条记录)。\n\nDataset Deduplication & Merge Tool - Supports multiple data import methods (direct input/URL/Dataset), field-based deduplication, large dataset support (10M+ records).",
+  "description": "数据集去重与合并工具 - 支持多种数据导入方式（直接输入/URL/Dataset），基于字段组合去重，支持大数据集处理。\n\nDataset Deduplication & Merge Tool - Supports multiple data import methods (direct input/URL/Dataset), field-based deduplication, large dataset support.",
   "b": "dataSourceType",
   "properties": [
     {

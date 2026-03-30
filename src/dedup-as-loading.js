@@ -1,8 +1,8 @@
-const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState, mapWithConcurrency } = require('./utils-minimal');
+const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState, mapWithConcurrency } = require('./utils');
 const { UPLOAD_SLEEP_MS } = require('./consts');
 
 /**
- * 边加载边去重模式（最小化版本 - 不使用big-set和bluebird）
+ * 边加载边去重模式
  */
 module.exports = async ({
     dataSourceType,
@@ -24,7 +24,7 @@ module.exports = async ({
     appendFileSource,
     cafesdk,
 }) => {
-    // 使用原生 Set（限制数据集大小）
+    // 使用 Set 进行去重
     const dedupSet = new Set();
 
     // 初始化数据源级推送状态

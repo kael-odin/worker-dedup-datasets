@@ -1,8 +1,8 @@
-const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState, mapWithConcurrency } = require('./utils-minimal');
+const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState, mapWithConcurrency } = require('./utils');
 const { UPLOAD_SLEEP_MS } = require('./consts');
 
 /**
- * 先加载后去重模式（最小化版本 - 不使用big-set和bluebird）
+ * 先加载后去重模式
  */
 module.exports = async ({
     dataSourceType,
@@ -25,7 +25,7 @@ module.exports = async ({
     appendFileSource,
     cafesdk,
 }) => {
-    // 使用原生 Set（限制数据集大小）
+    // 使用 Set 进行去重
     const dedupSet = new Set();
 
     // 初始化推送状态
@@ -100,11 +100,6 @@ module.exports = async ({
 
     const loadTime = Math.round((Date.now() - loadStart) / 1000);
     await cafesdk.log.info(`数据加载完成,共 ${allItems.length} 条记录,耗时 ${loadTime} 秒`);
-
-    // 检查数据集大小（使用原生Set的限制）
-    if (allItems.length > 1000000) {
-        await cafesdk.log.warning(`警告: 数据集较大 (${allItems.length} 条),使用原生Set可能有内存问题`);
-    }
 
     // 去重前转换
     if (verboseLog) {

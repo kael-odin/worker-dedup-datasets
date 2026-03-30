@@ -34,7 +34,6 @@ Dedup Datasets Worker is a powerful tool for merging and deduplicating datasets 
 | 🚀 **Auto Format Detection** | Automatically detect JSON/JSONL based on file extension |
 | 🌐 **Cross-platform Paths** | Support for Windows/Unix file paths and `file:///` protocol |
 | 💾 **State Persistence** | Automatic state saving for recovery from interruptions |
-| 📊 **BigSet Support** | Handle 10M+ records with BigSet data structure |
 | 🔍 **Duplicate Detection** | Find and output duplicate items separately |
 
 ### 🚀 Quick Start
@@ -230,20 +229,25 @@ Before using this worker, you need to prepare your data files:
 
 ### 📚 Technical Details
 
-- **BigSet**: Uses `big-set` package for handling large datasets (10M+ records)
-- **Parallel Processing**: Uses `bluebird` for concurrent file loading and data pushing
+- **Native Set**: Uses JavaScript native `Set` for efficient deduplication (sufficient for most use cases)
+- **Parallel Processing**: Custom `mapWithConcurrency` function for concurrent file loading
 - **Auto Format Detection**: Automatically switches between JSON/JSONL based on file extension
 - **Cross-platform**: Handles Windows/Unix path differences automatically
 - **State Recovery**: Saves processing state every 15 seconds
+- **Zero External Dependencies**: Only requires CafeScraper SDK (no additional npm packages needed)
 
 ### 📦 Dependencies
 
 ```json
 {
-  "big-set": "^1.0.2",
-  "bluebird": "^3.7.2"
+  "@grpc/grpc-js": "^1.13.4",
+  "google-protobuf": "^4.0.0"
 }
 ```
+
+**Note**: This worker uses native JavaScript features instead of external packages:
+- `Set` (native) instead of `big-set` - sufficient for datasets up to millions of records
+- `mapWithConcurrency` (custom) instead of `bluebird.map` - same functionality with zero dependencies
 
 ### 🧪 Testing
 
@@ -495,20 +499,25 @@ npm start
 
 ### 📚 技术细节
 
-- **BigSet**: 使用 `big-set` 包处理大数据集（1000万+ 条记录）
-- **并行处理**: 使用 `bluebird` 实现并发文件加载和数据推送
+- **原生 Set**: 使用 JavaScript 原生 `Set` 进行高效去重（适用于绝大多数场景）
+- **并行处理**: 自定义 `mapWithConcurrency` 函数实现并发文件加载
 - **自动格式检测**: 根据文件扩展名自动切换 JSON/JSONL 格式
 - **跨平台支持**: 自动处理 Windows/Unix 路径差异
 - **状态恢复**: 每 15 秒自动保存处理状态
+- **零外部依赖**: 仅依赖 CafeScraper SDK（无需额外 npm 包）
 
 ### 📦 依赖项
 
 ```json
 {
-  "big-set": "^1.0.2",
-  "bluebird": "^3.7.2"
+  "@grpc/grpc-js": "^1.13.4",
+  "google-protobuf": "^4.0.0"
 }
 ```
+
+**注意**: 本 Worker 使用原生 JavaScript 特性代替外部包：
+- `Set`（原生）代替 `big-set` - 足以处理百万级数据集
+- `mapWithConcurrency`（自定义）代替 `bluebird.map` - 相同功能，零依赖
 
 ### 🧪 测试
 

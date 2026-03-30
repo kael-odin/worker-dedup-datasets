@@ -72,18 +72,28 @@ async function main() {
         let parsedCustomInputData;
         
         try {
-            parsedInputData = typeof inputData === 'string' ? JSON.parse(inputData) : inputData;
-            if (!Array.isArray(parsedInputData)) {
-                throw new Error('inputData 必须是 JSON 数组格式');
+            // 处理空字符串或未定义的情况
+            if (!inputData || inputData.trim() === '') {
+                parsedInputData = [];
+            } else {
+                parsedInputData = typeof inputData === 'string' ? JSON.parse(inputData) : inputData;
+                if (!Array.isArray(parsedInputData)) {
+                    throw new Error('inputData 必须是 JSON 数组格式');
+                }
             }
         } catch (error) {
             throw new Error(`解析 inputData 失败: ${error.message}。请确保是有效的 JSON 数组格式，例如: [{"id": 1}]`);
         }
 
         try {
-            parsedCustomInputData = typeof customInputData === 'string' ? JSON.parse(customInputData) : customInputData;
-            if (typeof parsedCustomInputData !== 'object' || Array.isArray(parsedCustomInputData)) {
-                throw new Error('customInputData 必须是 JSON 对象格式');
+            // 处理空字符串或未定义的情况
+            if (!customInputData || customInputData.trim() === '') {
+                parsedCustomInputData = {};
+            } else {
+                parsedCustomInputData = typeof customInputData === 'string' ? JSON.parse(customInputData) : customInputData;
+                if (typeof parsedCustomInputData !== 'object' || Array.isArray(parsedCustomInputData)) {
+                    throw new Error('customInputData 必须是 JSON 对象格式');
+                }
             }
         } catch (error) {
             throw new Error(`解析 customInputData 失败: ${error.message}。请确保是有效的 JSON 对象格式，例如: {"minPrice": 100}`);

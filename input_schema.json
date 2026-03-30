@@ -22,7 +22,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "直接粘贴 JSON 数组数据。示例格式：\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]\n\nPaste JSON array data directly. Example format:\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]",
-      "default": "[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200},\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 3, \"name\": \"Product C\", \"price\": 150}\n]"
+      "placeholder": "[{\"id\": 1, \"name\": \"Product A\"}]"
     },
     {
       "title": "网络数据URL列表 / Network Data URLs",
@@ -106,7 +106,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "去重前对数据进行自定义转换的 JavaScript 函数。函数签名为: async (items, { customInputData }) => { return items; }。可用于过滤、修改或添加字段。\n\nJavaScript function to custom transform data before deduplication. Function signature: async (items, { customInputData }) => { return items; }. Can be used to filter, modify or add fields.\n\n💡 提示：建议在函数中添加 try-catch 错误处理，避免因个别数据格式错误导致整个任务失败。\n\n💡 Tip: It's recommended to add try-catch error handling in the function to avoid the entire task failing due to individual data format errors.",
-      "default": "async (items, { customInputData }) => {\n    return items;\n}"
+      "placeholder": "async (items, { customInputData }) => {\n  return items;\n}"
     },
     {
       "title": "去重后转换函数 / Post-Dedup Transform Function",
@@ -114,7 +114,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "去重后对数据进行自定义转换的 JavaScript 函数。函数签名为: async (items, { customInputData }) => { return items; }。可用于最终数据格式化。\n\nJavaScript function to custom transform data after deduplication. Function signature: async (items, { customInputData }) => { return items; }. Can be used for final data formatting.",
-      "default": "async (items, { customInputData }) => {\n    return items;\n}"
+      "placeholder": "async (items, { customInputData }) => {\n  return items;\n}"
     },
     {
       "title": "自定义输入数据 / Custom Input Data",

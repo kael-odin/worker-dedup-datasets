@@ -101,15 +101,16 @@ async function main() {
 
         // 处理 stringList 字段格式(平台会将单项展开或保持对象数组)
         let parsedFields = fields;
-        if (!Array.isArray(fields)) {
-            // 单项展开情况：fields 字段消失，string 出现在顶层
+        if (!Array.isArray(fields) || fields.length === 0) {
+            // 情况1：fields 不存在或为空数组，检查单项展开
             if (inputJson.string) {
+                // 单项展开：fields 字段消失，string 出现在顶层
                 parsedFields = [inputJson.string];
             } else {
                 parsedFields = [];
             }
         } else {
-            // 正常情况：fields 是对象数组 [{ string: "id" }]
+            // 情况2：fields 是对象数组 [{ string: "id" }]
             parsedFields = fields.map(item => {
                 if (typeof item === 'object' && item.string) {
                     return item.string;
@@ -121,7 +122,7 @@ async function main() {
         await cafesdk.log.debug(`解析后的去重字段: ${JSON.stringify(parsedFields)}`);
 
         let parsedFieldsToLoad = fieldsToLoad;
-        if (!Array.isArray(fieldsToLoad)) {
+        if (!Array.isArray(fieldsToLoad) || fieldsToLoad.length === 0) {
             if (inputJson.string) {
                 parsedFieldsToLoad = [inputJson.string];
             } else {
@@ -138,7 +139,7 @@ async function main() {
 
         // 处理 datasetIds 的 stringList 格式
         let parsedDatasetIds = datasetIds;
-        if (!Array.isArray(datasetIds)) {
+        if (!Array.isArray(datasetIds) || datasetIds.length === 0) {
             if (inputJson.string) {
                 // 单项展开情况
                 parsedDatasetIds = [inputJson.string];
@@ -186,8 +187,13 @@ async function main() {
         }
 
         // 转换函数
-        const preDedupTransformFn = eval(preDedupTransformFunction);
-        const postDedupTransformFn = eval(postDedupTransformFunction);
+        const defaultTransformFn = async (items) => items;
+        const preDedupTransformFn = preDedupTransformFunction && preDedupTransformFunction.trim()
+            ? eval(preDedupTransformFunction)
+            : defaultTransformFn;
+        const postDedupTransformFn = postDedupTransformFunction && postDedupTransformFunction.trim()
+            ? eval(postDedupTransformFunction)
+            : defaultTransformFn;
 
         // 加载之前的状态(用于断点续传)
         const pushState = (await loadState('PUSHED')) || {};

@@ -3,6 +3,49 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 const { STATE_DIR } = require('./consts');
+const { URL } = require('url');
+
+// Allow insecure HTTPS connections (required for Cafe proxy environment)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+/**
+ * Get proxy configuration
+ * Supports Cafe cloud environment (PROXY_AUTH) and standard proxy env vars
+ */
+function getProxyConfig(targetUrl) {
+    // Check Cafe-specific PROXY_AUTH (for cloud environment)
+    if (process.env.PROXY_AUTH) {
+        return {
+            type: 'cafe',
+            host: 'proxy-inner.cafescraper.com',
+            port: 6000,
+            auth: process.env.PROXY_AUTH,
+        };
+    }
+
+    // Check standard proxy environment variables
+    const isHttps = targetUrl.startsWith('https:');
+    const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy ||
+                     process.env.HTTP_PROXY || process.env.http_proxy ||
+                     process.env.ALL_PROXY || process.env.all_proxy;
+
+    if (proxyUrl) {
+        try {
+            const parsed = new URL(proxyUrl);
+            return {
+                type: 'standard',
+                host: parsed.hostname,
+                port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+                auth: parsed.username && parsed.password ? 
+                      Buffer.from(`${parsed.username}:${parsed.password}`).toString('base64') : null,
+            };
+        } catch (e) {
+            console.warn(`Invalid proxy URL: ${proxyUrl}`);
+        }
+    }
+
+    return null;
+}
 
 /**
  * 解析输入文件路径
@@ -75,9 +118,10 @@ async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
     }
     
     return new Promise((resolve, reject) => {
-        const client = url.startsWith('https') ? https : http;
+        const parsedUrl = new URL(url);
+        const proxyConfig = getProxyConfig(url);
         
-        client.get(url, (res) => {
+        const handleResponse = (res) => {
             let data = '';
             
             res.on('data', (chunk) => {
@@ -122,9 +166,157 @@ async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
                     reject(new Error(`解析URL数据失败 ${url}: ${error.message}`));
                 }
             });
-        }).on('error', (error) => {
-            reject(new Error(`加载URL失败 ${url}: ${error.message}`));
-        });
+        };
+        
+        // Use proxy if available
+        if (proxyConfig && proxyConfig.type === 'cafe') {
+            // Use HTTP CONNECT to establish tunnel
+            const proxyReq = http.request({
+                hostname: proxyConfig.host,
+                port: proxyConfig.port,
+                method: 'CONNECT',
+                path: `${parsedUrl.hostname}:${parsedUrl.port || 443}`,
+                headers: {
+                    'Proxy-Authorization': `Basic ${proxyConfig.auth}`,
+                    'Host': `${parsedUrl.hostname}:${parsedUrl.port || 443}`,
+                },
+                timeout: 30000,
+            });
+            
+            proxyReq.on('connect', (res, socket) => {
+                if (res.statusCode !== 200) {
+                    reject(new Error(`代理连接失败: ${res.statusCode}`));
+                    return;
+                }
+                
+                // Establish TLS connection through the tunnel
+                const tlsSocket = require('tls').connect({
+                    socket: socket,
+                    servername: parsedUrl.hostname,
+                }, () => {
+                    const request = `GET ${parsedUrl.pathname}${parsedUrl.search} HTTP/1.1\r\n` +
+                                   `Host: ${parsedUrl.hostname}\r\n` +
+                                   `Connection: close\r\n\r\n`;
+                    tlsSocket.write(request);
+                });
+                
+                tlsSocket.on('error', (err) => {
+                    reject(new Error(`TLS连接失败 ${url}: ${err.message}`));
+                });
+                
+                // Parse HTTP response
+                let responseData = '';
+                let headersDone = false;
+                let statusCode = null;
+                
+                tlsSocket.on('data', (chunk) => {
+                    responseData += chunk.toString();
+                    
+                    if (!headersDone) {
+                        const headerEnd = responseData.indexOf('\r\n\r\n');
+                        if (headerEnd !== -1) {
+                            headersDone = true;
+                            const headers = responseData.substring(0, headerEnd);
+                            const statusMatch = headers.match(/HTTP\/\d\.\d (\d+)/);
+                            if (statusMatch) {
+                                statusCode = parseInt(statusMatch[1]);
+                            }
+                            
+                            if (statusCode && statusCode >= 200 && statusCode < 300) {
+                                const body = responseData.substring(headerEnd + 4);
+                                
+                                try {
+                                    let detectedFormat = format;
+                                    if (format === 'json' && url.endsWith('.jsonl')) {
+                                        detectedFormat = 'jsonl';
+                                    } else if (format === 'jsonl' && url.endsWith('.json')) {
+                                        detectedFormat = 'json';
+                                    }
+                                    
+                                    let items;
+                                    if (detectedFormat === 'json') {
+                                        items = JSON.parse(body);
+                                        if (!Array.isArray(items)) {
+                                            throw new Error(`JSON 文件应包含数组,但收到 ${typeof items}`);
+                                        }
+                                    } else if (detectedFormat === 'jsonl') {
+                                        items = body.trim().split('\n').map(line => JSON.parse(line));
+                                    } else {
+                                        throw new Error(`不支持的文件格式: ${detectedFormat}`);
+                                    }
+                                    
+                                    if (fieldsToLoad && fieldsToLoad.length > 0) {
+                                        items = items.map(item => {
+                                            const filteredItem = {};
+                                            for (const field of fieldsToLoad) {
+                                                if (item.hasOwnProperty(field)) {
+                                                    filteredItem[field] = item[field];
+                                                }
+                                            }
+                                            return filteredItem;
+                                        });
+                                    }
+                                    
+                                    resolve(items);
+                                } catch (error) {
+                                    reject(new Error(`解析URL数据失败 ${url}: ${error.message}`));
+                                }
+                            } else {
+                                reject(new Error(`HTTP请求失败: ${statusCode}`));
+                            }
+                        }
+                    }
+                });
+            });
+            
+            proxyReq.on('error', (err) => {
+                reject(new Error(`代理请求失败 ${url}: ${err.message}`));
+            });
+            
+            proxyReq.on('timeout', () => {
+                proxyReq.destroy();
+                reject(new Error(`代理连接超时 ${url}`));
+            });
+            
+            proxyReq.end();
+        } else if (proxyConfig && proxyConfig.type === 'standard') {
+            // Standard proxy support (for local testing)
+            const proxyReq = http.request({
+                hostname: proxyConfig.host,
+                port: proxyConfig.port,
+                method: 'GET',
+                path: url,
+                headers: {
+                    'Host': parsedUrl.hostname,
+                    ...(proxyConfig.auth && { 'Proxy-Authorization': `Basic ${proxyConfig.auth}` }),
+                },
+                timeout: 30000,
+            }, handleResponse);
+            
+            proxyReq.on('error', (err) => {
+                reject(new Error(`加载URL失败 ${url}: ${err.message}`));
+            });
+            
+            proxyReq.on('timeout', () => {
+                proxyReq.destroy();
+                reject(new Error(`请求超时 ${url}`));
+            });
+            
+            proxyReq.end();
+        } else {
+            // No proxy, direct request
+            const client = url.startsWith('https') ? https : http;
+            const req = client.get(url, { timeout: 30000 }, handleResponse);
+            
+            req.on('error', (err) => {
+                reject(new Error(`加载URL失败 ${url}: ${err.message}`));
+            });
+            
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new Error(`请求超时 ${url}`));
+            });
+        }
     });
 }
 

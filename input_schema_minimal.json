@@ -1,0 +1,30 @@
+{
+  "description": "数据集去重工具（简化版）- Dataset Deduplication Tool (Minimal)",
+  "b": "dataSourceType",
+  "properties": [
+    {
+      "title": "数据来源类型 / Data Source Type",
+      "name": "dataSourceType",
+      "type": "string",
+      "editor": "select",
+      "description": "选择数据来源类型",
+      "default": "direct-input",
+      "options": [
+        { "label": "直接输入数据 / Direct Input", "value": "direct-input" },
+        { "label": "网络URL / Network URL", "value": "network-url" }
+      ],
+      "required": true
+    },
+    {
+      "title": "去重字段 / Deduplication Fields",
+      "name": "fields",
+      "type": "array",
+      "editor": "stringList",
+      "description": "用于判断重复的字段名称",
+      "default": [
+        { "string": "id" }
+      ],
+      "required": true
+    }
+  ]
+}

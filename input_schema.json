@@ -122,7 +122,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "传递给转换函数的自定义数据对象（JSON格式）。示例：{\"minPrice\": 100, \"maxPrice\": 1000}\n\nCustom data object passed to transform functions (JSON format). Example: {\"minPrice\": 100, \"maxPrice\": 1000}",
-      "default": "{}"
+      "placeholder": "{}"
     },
     {
       "title": "Null 值视为唯一 / Treat Null as Unique",

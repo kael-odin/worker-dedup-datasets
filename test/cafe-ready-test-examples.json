@@ -1,0 +1,151 @@
+[
+  {
+    "name": "测试1: 直接输入数据 - 基础去重",
+    "description": "最简单的测试，直接粘贴JSON数组数据",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 2, "name": "Product B", "price": 200 },
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 3, "name": "Product C", "price": 150 }
+      ],
+      "fields": ["id"]
+    },
+    "expectedOutput": "2条唯一数据（id: 1, 2, 3）"
+  },
+  {
+    "name": "测试2: 直接输入数据 - 多字段去重",
+    "description": "使用多个字段组合去重",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 1, "name": "Product A", "price": 200 },
+        { "id": 2, "name": "Product B", "price": 100 }
+      ],
+      "fields": ["id", "price"]
+    },
+    "expectedOutput": "2条唯一数据（id:1+price:100, id:1+price:200）"
+  },
+  {
+    "name": "测试3: 网络URL - GitHub测试数据",
+    "description": "从GitHub加载真实的测试数据",
+    "input": {
+      "dataSourceType": "network-url",
+      "inputUrls": [
+        { "url": "https://raw.githubusercontent.com/kael-odin/worker-dedup-datasets/main/test/data1.json" },
+        { "url": "https://raw.githubusercontent.com/kael-odin/worker-dedup-datasets/main/test/data2.json" }
+      ],
+      "fields": ["id"]
+    },
+    "expectedOutput": "8条唯一数据（data1: 6条, data2: 4条, 去重后: 8条）"
+  },
+  {
+    "name": "测试4: 网络URL - JSONL格式",
+    "description": "加载JSONL格式的数据",
+    "input": {
+      "dataSourceType": "network-url",
+      "inputUrls": [
+        { "url": "https://raw.githubusercontent.com/kael-odin/worker-dedup-datasets/main/test/data3.jsonl" }
+      ],
+      "fields": ["id"]
+    },
+    "expectedOutput": "3条唯一数据（4条输入，1条重复）"
+  },
+  {
+    "name": "测试5: 查看重复数据",
+    "description": "输出被判定为重复的数据",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 2, "name": "Product B", "price": 200 },
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 3, "name": "Product C", "price": 150 },
+        { "id": 2, "name": "Product B", "price": 200 }
+      ],
+      "fields": ["id"],
+      "output": "duplicate-items"
+    },
+    "expectedOutput": "2条重复数据（id: 1 和 id: 2）"
+  },
+  {
+    "name": "测试6: 数据过滤 + 去重",
+    "description": "先过滤数据再去重",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 50 },
+        { "id": 2, "name": "Product B", "price": 150 },
+        { "id": 3, "name": "Product C", "price": 200 },
+        { "id": 1, "name": "Product A", "price": 50 }
+      ],
+      "fields": ["id"],
+      "customInputData": {
+        "minPrice": 100
+      },
+      "preDedupTransformFunction": "async (items, { customInputData }) => {\n  const { minPrice } = customInputData;\n  return items.filter(item => item.price >= minPrice);\n}"
+    },
+    "expectedOutput": "2条唯一数据（price >= 100: id 2和3）"
+  },
+  {
+    "name": "测试7: 大数据集模式",
+    "description": "使用边加载边去重模式",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 2, "name": "Product B", "price": 200 },
+        { "id": 3, "name": "Product C", "price": 150 }
+      ],
+      "fields": ["id"],
+      "mode": "dedup-as-loading",
+      "batchSize": 1000
+    },
+    "expectedOutput": "3条唯一数据"
+  },
+  {
+    "name": "测试8: 添加数据来源",
+    "description": "在输出数据中添加来源标记",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 2, "name": "Product B", "price": 200 }
+      ],
+      "fields": ["id"],
+      "appendFileSource": true
+    },
+    "expectedOutput": "2条数据，每条包含 __fileSource__ 字段"
+  },
+  {
+    "name": "测试9: 仅加载指定字段",
+    "description": "只加载需要的字段以节省内存",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100, "category": "Electronics", "stock": 50 },
+        { "id": 2, "name": "Product B", "price": 200, "category": "Books", "stock": 30 }
+      ],
+      "fields": ["id"],
+      "fieldsToLoad": ["id", "name"]
+    },
+    "expectedOutput": "2条数据，只包含 id 和 name 字段"
+  },
+  {
+    "name": "测试10: 自定义数据转换",
+    "description": "去重后添加序号字段",
+    "input": {
+      "dataSourceType": "direct-input",
+      "inputData": [
+        { "id": 1, "name": "Product A", "price": 100 },
+        { "id": 2, "name": "Product B", "price": 200 },
+        { "id": 3, "name": "Product C", "price": 150 }
+      ],
+      "fields": ["id"],
+      "postDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.map((item, index) => ({\n    rank: index + 1,\n    ...item\n  }));\n}"
+    },
+    "expectedOutput": "3条数据，每条包含 rank 序号字段"
+  }
+]

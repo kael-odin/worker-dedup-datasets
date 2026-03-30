@@ -1,5 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
+const https = require('https');
+const http = require('http');
 const { STATE_DIR } = require('./consts');
 
 /**
@@ -69,6 +71,97 @@ async function loadFromFile(filePath, format = 'json', fieldsToLoad = null) {
         return items;
     } catch (error) {
         throw new Error(`加载文件失败 ${absolutePath}: ${error.message}`);
+    }
+}
+
+/**
+ * 从网络URL加载数据
+ */
+async function loadFromUrl(url, format = 'json', fieldsToLoad = null) {
+    return new Promise((resolve, reject) => {
+        const client = url.startsWith('https') ? https : http;
+        
+        client.get(url, (res) => {
+            let data = '';
+            
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            res.on('end', () => {
+                try {
+                    // 自动检测格式(基于URL扩展名)
+                    let detectedFormat = format;
+                    if (format === 'json' && url.endsWith('.jsonl')) {
+                        detectedFormat = 'jsonl';
+                    } else if (format === 'jsonl' && url.endsWith('.json')) {
+                        detectedFormat = 'json';
+                    }
+                    
+                    let items;
+                    if (detectedFormat === 'json') {
+                        items = JSON.parse(data);
+                        if (!Array.isArray(items)) {
+                            throw new Error(`JSON 文件应包含数组,但收到 ${typeof items}`);
+                        }
+                    } else if (detectedFormat === 'jsonl') {
+                        items = data.trim().split('\n').map(line => JSON.parse(line));
+                    } else {
+                        throw new Error(`不支持的文件格式: ${detectedFormat}`);
+                    }
+                    
+                    // 如果指定了要加载的字段,则过滤
+                    if (fieldsToLoad && fieldsToLoad.length > 0) {
+                        items = items.map(item => {
+                            const filteredItem = {};
+                            for (const field of fieldsToLoad) {
+                                if (item.hasOwnProperty(field)) {
+                                    filteredItem[field] = item[field];
+                                }
+                            }
+                            return filteredItem;
+                        });
+                    }
+                    
+                    resolve(items);
+                } catch (error) {
+                    reject(new Error(`解析URL数据失败 ${url}: ${error.message}`));
+                }
+            });
+        }).on('error', (error) => {
+            reject(new Error(`加载URL失败 ${url}: ${error.message}`));
+        });
+    });
+}
+
+/**
+ * 从Cafe Dataset加载数据
+ */
+async function loadFromDataset(datasetId, cafesdk, fieldsToLoad = null) {
+    try {
+        // 使用Cafe SDK从Dataset加载数据
+        const items = await cafesdk.dataset.getData(datasetId);
+        
+        if (!Array.isArray(items)) {
+            throw new Error(`Dataset 应包含数组,但收到 ${typeof items}`);
+        }
+        
+        // 如果指定了要加载的字段,则过滤
+        if (fieldsToLoad && fieldsToLoad.length > 0) {
+            return items.map(item => {
+                const filteredItem = {};
+                for (const field of fieldsToLoad) {
+                    if (item.hasOwnProperty(field)) {
+                        filteredItem[field] = item[field];
+                    }
+                }
+                return filteredItem;
+            });
+        }
+        
+        return items;
+    } catch (error) {
+        throw new Error(`加载Dataset失败 ${datasetId}: ${error.message}`);
     }
 }
 
@@ -167,6 +260,8 @@ function sleep(ms) {
 module.exports = {
     parseFilePath,
     loadFromFile,
+    loadFromUrl,
+    loadFromDataset,
     saveState,
     loadState,
     dedup,

@@ -1,13 +1,16 @@
 const BigSet = require('big-set');
 const bluebird = require('bluebird');
-const { loadFromFile, dedup, sleep, saveState, loadState } = require('./utils');
+const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState } = require('./utils');
 const { UPLOAD_SLEEP_MS } = require('./consts');
 
 /**
  * 先加载后去重模式
  */
 module.exports = async ({
-    inputFiles,
+    dataSourceType,
+    inputData,
+    inputUrls,
+    datasetIds,
     inputFormat,
     output,
     fields,
@@ -31,41 +34,73 @@ module.exports = async ({
         pushState.pushedItemsCount = 0;
     }
 
-    // 加载所有文件
+    // 加载所有数据
     if (verboseLog) {
-        await cafesdk.log.info('开始并行加载文件...');
+        await cafesdk.log.info('开始加载数据...');
     }
 
     const loadStart = Date.now();
     let allItems = [];
 
-    // 并行加载所有文件
-    await bluebird.map(inputFiles, async (fileObj) => {
-        const filePath = fileObj.url || fileObj;
-        
+    // 根据数据源类型加载
+    if (dataSourceType === 'direct-input') {
+        // 直接输入数据
+        allItems = inputData || [];
         if (verboseLog) {
-            await cafesdk.log.debug(`正在加载文件: ${filePath}`);
+            await cafesdk.log.info(`直接输入数据: ${allItems.length} 条记录`);
         }
+    } else if (dataSourceType === 'network-url') {
+        // 从网络URL加载
+        await bluebird.map(inputUrls, async (urlObj) => {
+            const url = urlObj.url || urlObj;
+            
+            if (verboseLog) {
+                await cafesdk.log.debug(`正在加载URL: ${url}`);
+            }
 
-        let items = await loadFromFile(filePath, inputFormat, fieldsToLoad);
+            let items = await loadFromUrl(url, inputFormat, fieldsToLoad);
 
-        // 附加文件来源
-        if (appendFileSource) {
-            items = items.map(item => ({
-                ...item,
-                __fileSource__: filePath,
-            }));
-        }
+            // 附加数据来源
+            if (appendFileSource) {
+                items = items.map(item => ({
+                    ...item,
+                    __fileSource__: url,
+                }));
+            }
 
-        allItems = allItems.concat(items);
+            allItems = allItems.concat(items);
 
-        if (verboseLog) {
-            await cafesdk.log.info(`已加载 ${items.length} 条记录,当前总计: ${allItems.length}`);
-        }
-    }, { concurrency: parallelLoads });
+            if (verboseLog) {
+                await cafesdk.log.info(`已加载 ${items.length} 条记录,当前总计: ${allItems.length}`);
+            }
+        }, { concurrency: parallelLoads });
+    } else if (dataSourceType === 'cafe-dataset') {
+        // 从Cafe Dataset加载
+        await bluebird.map(datasetIds, async (datasetId) => {
+            if (verboseLog) {
+                await cafesdk.log.debug(`正在加载Dataset: ${datasetId}`);
+            }
+
+            let items = await loadFromDataset(datasetId, cafesdk, fieldsToLoad);
+
+            // 附加数据来源
+            if (appendFileSource) {
+                items = items.map(item => ({
+                    ...item,
+                    __fileSource__: datasetId,
+                }));
+            }
+
+            allItems = allItems.concat(items);
+
+            if (verboseLog) {
+                await cafesdk.log.info(`已加载 ${items.length} 条记录,当前总计: ${allItems.length}`);
+            }
+        }, { concurrency: parallelLoads });
+    }
 
     const loadTime = Math.round((Date.now() - loadStart) / 1000);
-    await cafesdk.log.info(`文件加载完成,共 ${allItems.length} 条记录,耗时 ${loadTime} 秒`);
+    await cafesdk.log.info(`数据加载完成,共 ${allItems.length} 条记录,耗时 ${loadTime} 秒`);
 
     // 去重前转换
     if (verboseLog) {

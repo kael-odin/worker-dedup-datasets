@@ -1,13 +1,16 @@
 const BigSet = require('big-set');
 const bluebird = require('bluebird');
-const { loadFromFile, dedup, sleep, saveState, loadState } = require('./utils');
+const { loadFromFile, loadFromUrl, loadFromDataset, dedup, sleep, saveState, loadState } = require('./utils');
 const { UPLOAD_SLEEP_MS } = require('./consts');
 
 /**
  * 边加载边去重模式
  */
 module.exports = async ({
-    inputFiles,
+    dataSourceType,
+    inputData,
+    inputUrls,
+    datasetIds,
     inputFormat,
     output,
     fields,
@@ -25,9 +28,9 @@ module.exports = async ({
 }) => {
     const dedupSet = new BigSet();
 
-    // 初始化文件级推送状态
-    if (!pushState.files) {
-        pushState.files = {};
+    // 初始化数据源级推送状态
+    if (!pushState.sources) {
+        pushState.sources = {};
     }
 
     let totalLoaded = 0;
@@ -37,48 +40,84 @@ module.exports = async ({
 
     const loadStart = Date.now();
 
-    // 并行处理所有文件
-    await bluebird.map(inputFiles, async (fileObj) => {
-        const filePath = fileObj.url || fileObj;
-        const fileKey = filePath.replace(/[^a-zA-Z0-9]/g, '_');
+    // 准备数据源列表
+    let dataSources = [];
+    
+    if (dataSourceType === 'direct-input') {
+        // 直接输入数据作为一个数据源
+        if (inputData && inputData.length > 0) {
+            dataSources.push({
+                id: 'direct-input',
+                type: 'direct',
+                data: inputData,
+            });
+        }
+    } else if (dataSourceType === 'network-url') {
+        // 网络URL列表
+        dataSources = inputUrls.map((urlObj, index) => ({
+            id: urlObj.url || urlObj,
+            type: 'url',
+            url: urlObj.url || urlObj,
+        }));
+    } else if (dataSourceType === 'cafe-dataset') {
+        // Dataset ID列表
+        dataSources = datasetIds.map((datasetId, index) => ({
+            id: datasetId,
+            type: 'dataset',
+            datasetId: datasetId,
+        }));
+    }
 
-        // 初始化该文件的状态
-        if (!pushState.files[fileKey]) {
-            pushState.files[fileKey] = { processed: false, pushedCount: 0 };
+    // 并行处理所有数据源
+    await bluebird.map(dataSources, async (source) => {
+        const sourceKey = source.id.replace(/[^a-zA-Z0-9]/g, '_');
+
+        // 初始化该数据源的状态
+        if (!pushState.sources[sourceKey]) {
+            pushState.sources[sourceKey] = { processed: false, pushedCount: 0 };
         }
 
-        // 如果该文件已处理过,跳过
-        if (pushState.files[fileKey].processed) {
+        // 如果该数据源已处理过,跳过
+        if (pushState.sources[sourceKey].processed) {
             if (verboseLog) {
-                await cafesdk.log.debug(`文件已处理过,跳过: ${filePath}`);
+                await cafesdk.log.debug(`数据源已处理过,跳过: ${source.id}`);
             }
             return;
         }
 
         if (verboseLog) {
-            await cafesdk.log.debug(`正在加载文件: ${filePath}`);
+            await cafesdk.log.debug(`正在加载数据源: ${source.id}`);
         }
 
-        let items = await loadFromFile(filePath, inputFormat, fieldsToLoad);
+        let items;
+        
+        // 根据数据源类型加载
+        if (source.type === 'direct') {
+            items = source.data;
+        } else if (source.type === 'url') {
+            items = await loadFromUrl(source.url, inputFormat, fieldsToLoad);
+        } else if (source.type === 'dataset') {
+            items = await loadFromDataset(source.datasetId, cafesdk, fieldsToLoad);
+        }
 
-        // 附加文件来源
+        // 附加数据来源
         if (appendFileSource) {
             items = items.map(item => ({
                 ...item,
-                __fileSource__: filePath,
+                __fileSource__: source.id,
             }));
         }
 
         totalLoaded += items.length;
 
         // 去重前转换
-        items = await preDedupTransformFn(items, { customInputData, fileSource: filePath });
+        items = await preDedupTransformFn(items, { customInputData, fileSource: source.id });
 
         // 去重
         const outputItems = dedup({ items, output, fields, dedupSet, nullAsUnique });
 
         // 去重后转换
-        const finalItems = await postDedupTransformFn(outputItems, { customInputData, fileSource: filePath });
+        const finalItems = await postDedupTransformFn(outputItems, { customInputData, fileSource: source.id });
 
         totalUnique += dedupSet.size;
         totalDuplicates += (items.length - outputItems.length);
@@ -86,7 +125,7 @@ module.exports = async ({
         // 推送数据
         if (output !== 'nothing' && finalItems.length > 0) {
             // 从上次推送的位置继续
-            const startIdx = pushState.files[fileKey].pushedCount;
+            const startIdx = pushState.sources[sourceKey].pushedCount;
             
             for (let i = startIdx; i < finalItems.length; i += batchSize) {
                 const batch = finalItems.slice(i, i + batchSize);
@@ -95,26 +134,26 @@ module.exports = async ({
                     await cafesdk.result.pushData(item);
                 }
 
-                pushState.files[fileKey].pushedCount = i + batch.length;
+                pushState.sources[sourceKey].pushedCount = i + batch.length;
                 totalPushed += batch.length;
 
                 // 保存状态
                 await saveState('PUSHED', pushState);
 
                 if (verboseLog) {
-                    await cafesdk.log.debug(`[文件 ${filePath}] 已推送 ${i + batch.length}/${finalItems.length} 条`);
+                    await cafesdk.log.debug(`[数据源 ${source.id}] 已推送 ${i + batch.length}/${finalItems.length} 条`);
                 }
 
                 await sleep(UPLOAD_SLEEP_MS);
             }
         }
 
-        // 标记该文件已处理完成
-        pushState.files[fileKey].processed = true;
+        // 标记该数据源已处理完成
+        pushState.sources[sourceKey].processed = true;
         await saveState('PUSHED', pushState);
 
         if (verboseLog) {
-            await cafesdk.log.info(`文件处理完成: ${filePath} - 加载 ${items.length} 条,输出 ${finalItems.length} 条`);
+            await cafesdk.log.info(`数据源处理完成: ${source.id} - 加载 ${items.length} 条,输出 ${finalItems.length} 条`);
         }
 
     }, { concurrency: parallelLoads });

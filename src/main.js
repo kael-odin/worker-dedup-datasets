@@ -14,26 +14,20 @@ const { MODES } = require('./consts');
 const { DEDUP_AFTER_LOAD, DEDUP_AS_LOADING } = MODES;
 
 // SDK 代理 - 自动适配本地和云端环境
-const cafesdk = new Proxy({}, {
-    get: (_, prop) => {
-        // 本地开发环境
-        if (process.env.LOCAL_DEV === '1') {
-            return require('../sdk_local')[prop];
-        }
-        // 云端环境
-        try {
-            return require('../sdk')[prop];
-        } catch {
-            return require('../sdk_local')[prop];
-        }
-    }
-});
+let cafesdk;
+if (process.env.LOCAL_DEV === '1') {
+    // 本地开发环境
+    cafesdk = require('../sdk_local');
+} else {
+    // 云端环境 - 使用真实的 Cafe SDK
+    cafesdk = require('../sdk');
+}
 
 async function main() {
     try {
         // 获取输入参数
         const inputJson = await cafesdk.parameter.getInputJSONObject();
-        await cafesdk.log.debug('输入参数:');
+        await cafesdk.log.debug('输入参数 / Input Parameters:');
         await cafesdk.log.debug(JSON.stringify(inputJson, null, 2));
 
         // 解析输入参数

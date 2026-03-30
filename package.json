@@ -28,7 +28,9 @@
   },
   "dependencies": {
     "big-set": "^1.0.2",
-    "bluebird": "^3.7.2"
+    "bluebird": "^3.7.2",
+    "@grpc/grpc-js": "^1.9.0",
+    "google-protobuf": "^3.21.0"
   },
   "devDependencies": {},
   "engines": {

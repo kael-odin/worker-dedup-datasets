@@ -19,10 +19,10 @@
     {
       "title": "直接输入数据 / Direct Input Data",
       "name": "inputData",
-      "type": "array",
-      "editor": "json",
+      "type": "string",
+      "editor": "textarea",
       "description": "直接粘贴 JSON 数组数据。示例格式：\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]\n\nPaste JSON array data directly. Example format:\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]",
-      "default": []
+      "default": "[]"
     },
     {
       "title": "网络数据URL列表 / Network Data URLs",
@@ -113,10 +113,10 @@
     {
       "title": "自定义输入数据 / Custom Input Data",
       "name": "customInputData",
-      "type": "object",
-      "editor": "json",
-      "description": "传递给转换函数的自定义数据对象。可在转换函数中通过 customInputData 参数访问。\n\nCustom data object passed to transform functions. Can be accessed via customInputData parameter in transform functions.",
-      "default": {}
+      "type": "string",
+      "editor": "textarea",
+      "description": "传递给转换函数的自定义数据对象（JSON格式）。示例：{\"minPrice\": 100, \"maxPrice\": 1000}\n\nCustom data object passed to transform functions (JSON format). Example: {\"minPrice\": 100, \"maxPrice\": 1000}",
+      "default": "{}"
     },
     {
       "title": "Null 值视为唯一 / Treat Null as Unique",

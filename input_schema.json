@@ -105,6 +105,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "去重前自定义转换函数 | Custom transform function before dedup",
+      "placeholder": "async (items, customData) => {\n  // 示例：过滤掉价格<0的数据\n  return items.filter(item => item.price >= 0);\n}",
       "required": false
     },
     {
@@ -113,6 +114,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "去重后自定义转换函数 | Custom transform function after dedup",
+      "placeholder": "async (items, customData) => {\n  // 示例：添加时间戳\n  return items.map(item => ({...item, dedupAt: Date.now()}));\n}",
       "required": false
     },
     {
@@ -121,6 +123,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "传递给转换函数的自定义数据(JSON格式) | Custom data for transform functions (JSON)",
+      "placeholder": "{\n  \"minPrice\": 10,\n  \"category\": \"electronics\"\n}",
       "required": false
     },
     {

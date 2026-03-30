@@ -239,7 +239,7 @@ async function fetchUrl(url, timeout = 30000) {
         if (proxyConfig) {
             const { type, host, port, auth } = proxyConfig;
             
-            console.log(`[PROXY] Using proxy ${host}:${port} (${type}) for ${url}`);
+            console.error(`[PROXY] Using proxy ${host}:${port} (${type}) for ${url}`);
 
             const targetUrl = new URL(url);
             const isHttps = targetUrl.protocol === 'https:';
@@ -255,13 +255,15 @@ async function fetchUrl(url, timeout = 30000) {
             });
 
             proxyReq.on('connect', (proxyRes, socket) => {
+                console.error(`[PROXY] CONNECT response: ${proxyRes.statusCode}`);
+                
                 if (proxyRes.statusCode !== 200) {
                     clearTimeout(timeoutId);
                     reject(new Error(`Proxy CONNECT failed with status ${proxyRes.statusCode}`));
                     return;
                 }
 
-                console.log(`[PROXY] CONNECT successful for ${targetUrl.hostname}`);
+                console.error(`[PROXY] CONNECT successful for ${targetUrl.hostname}`);
 
                 if (isHttps) {
                     const tlsOptions = {
@@ -271,16 +273,18 @@ async function fetchUrl(url, timeout = 30000) {
                         ALPNProtocols: ['http/1.1'],
                     };
 
+                    console.error(`[PROXY] Starting TLS handshake...`);
                     const tlsSocket = tls.connect(tlsOptions);
 
                     const tlsTimeout = setTimeout(() => {
+                        console.error(`[PROXY] TLS handshake timeout`);
                         tlsSocket.destroy();
                         handleError(new Error('TLS handshake timeout'));
                     }, 10000);
 
                     tlsSocket.on('secureConnect', () => {
                         clearTimeout(tlsTimeout);
-                        console.log(`[PROXY] TLS handshake successful`);
+                        console.error(`[PROXY] TLS handshake successful`);
 
                         const request = https.get({
                             hostname: targetUrl.hostname,
@@ -290,12 +294,20 @@ async function fetchUrl(url, timeout = 30000) {
                             createConnection: () => tlsSocket,
                         }, handleResponse);
 
-                        request.on('error', handleError);
+                        request.on('error', (err) => {
+                            console.error(`[PROXY] HTTPS request error: ${err.message}`);
+                            handleError(err);
+                        });
                     });
 
                     tlsSocket.on('error', (err) => {
                         clearTimeout(tlsTimeout);
+                        console.error(`[PROXY] TLS error: ${err.message}`);
                         handleError(err);
+                    });
+                    
+                    tlsSocket.on('close', () => {
+                        console.error(`[PROXY] TLS socket closed`);
                     });
                 } else {
                     const request = http.get({
@@ -317,7 +329,10 @@ async function fetchUrl(url, timeout = 30000) {
 
             proxyReq.end();
         } else {
-            console.log('[PROXY] No proxy configured, direct request');
+            console.error('[PROXY] No proxy configured, direct request');
+            console.error(`[PROXY] PROXY_AUTH=${process.env.PROXY_AUTH ? 'set' : 'not set'}`);
+            console.error(`[PROXY] HTTPS_PROXY=${process.env.HTTPS_PROXY || 'not set'}`);
+            
             const protocol = url.startsWith('https:') ? https : http;
             const req = protocol.get(
                 url,

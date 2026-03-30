@@ -1,0 +1,145 @@
+{
+  "description": "数据集去重与合并工具 - 支持从多个 JSON/JSONL 文件加载数据,基于字段组合去重,并支持自定义转换函数。本 Worker 是 Apify dedup-datasets actor 的 Cafe 平台适配版本,功能包括:数据合并、字段去重、数据转换、两种处理模式(先加载后去重/边加载边去重)。",
+  "b": "inputFiles",
+  "properties": [
+    {
+      "title": "输入文件列表",
+      "name": "inputFiles",
+      "type": "array",
+      "editor": "requestList",
+      "description": "需要合并和去重的 JSON/JSONL 文件路径列表。每个文件应包含 JSON 数组或 JSONL 格式的数据。示例: [{\"url\": \"file:///path/to/data1.json\"}, {\"url\": \"file:///path/to/data2.jsonl\"}]",
+      "required": true
+    },
+    {
+      "title": "去重字段",
+      "name": "fields",
+      "type": "array",
+      "editor": "stringList",
+      "description": "用于判断重复的字段名称列表。多个字段组合判断,字段越多去重越严格。例如:['id'] 表示按 id 去重,['name','price'] 表示按 name+price 组合去重。留空则不进行去重。",
+      "default": []
+    },
+    {
+      "title": "输入文件格式",
+      "name": "inputFormat",
+      "type": "string",
+      "editor": "select",
+      "description": "输入文件的格式。JSON 表示包含数组的 JSON 文件,JSONL 表示每行一个 JSON 对象的文件。",
+      "default": "json",
+      "options": [
+        { "label": "JSON (数组格式)", "value": "json" },
+        { "label": "JSONL (每行一个 JSON)", "value": "jsonl" }
+      ]
+    },
+    {
+      "title": "输出内容",
+      "name": "output",
+      "type": "string",
+      "editor": "select",
+      "description": "选择要输出的内容类型。'唯一项'输出去重后的数据,'重复项'输出被判定为重复的数据,'仅统计'只显示统计信息不输出数据。",
+      "default": "unique-items",
+      "options": [
+        { "label": "唯一项(去重后的数据)", "value": "unique-items" },
+        { "label": "重复项(被去重的数据)", "value": "duplicate-items" },
+        { "label": "仅统计(不输出数据)", "value": "nothing" }
+      ]
+    },
+    {
+      "title": "处理模式",
+      "name": "mode",
+      "type": "string",
+      "editor": "select",
+      "description": "去重处理模式。'先加载后去重'会先加载所有数据再去重,保持原始顺序但内存占用高;'边加载边去重'在加载时就去重,内存占用低但不保证顺序。大数据集(>10万条)建议使用后者。",
+      "default": "dedup-after-load",
+      "options": [
+        { "label": "先加载后去重(高内存,保持顺序)", "value": "dedup-after-load" },
+        { "label": "边加载边去重(低内存,不保证顺序)", "value": "dedup-as-loading" }
+      ]
+    },
+    {
+      "title": "仅加载指定字段",
+      "name": "fieldsToLoad",
+      "type": "array",
+      "editor": "stringList",
+      "description": "(可选)仅加载指定字段以减少内存占用和提升速度。留空则加载所有字段。注意:去重字段必须包含在内。",
+      "default": []
+    },
+    {
+      "title": "去重前转换函数",
+      "name": "preDedupTransformFunction",
+      "type": "string",
+      "editor": "textarea",
+      "description": "去重前对数据进行自定义转换的 JavaScript 函数。函数签名为:async (items, { customInputData }) => { return items; }。可用于过滤、修改或添加字段。",
+      "default": "async (items, { customInputData }) => {\n    return items;\n}"
+    },
+    {
+      "title": "去重后转换函数",
+      "name": "postDedupTransformFunction",
+      "type": "string",
+      "editor": "textarea",
+      "description": "去重后对数据进行自定义转换的 JavaScript 函数。函数签名为:async (items, { customInputData }) => { return items; }。可用于最终数据格式化。",
+      "default": "async (items, { customInputData }) => {\n    return items;\n}"
+    },
+    {
+      "title": "自定义输入数据",
+      "name": "customInputData",
+      "type": "object",
+      "editor": "json",
+      "description": "传递给转换函数的自定义数据对象。可在转换函数中通过 customInputData 参数访问。",
+      "default": {}
+    },
+    {
+      "title": "Null 值视为唯一",
+      "name": "nullAsUnique",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "如果开启,去重字段的 null/undefined 值将被视为唯一值(不与其他 null 重复)。默认关闭,null 值会被判定为重复。",
+      "default": false
+    },
+    {
+      "title": "并行加载数",
+      "name": "parallelLoads",
+      "type": "integer",
+      "editor": "number",
+      "description": "并行加载文件的线程数。增加此值可加快加载速度,但会增加内存占用。",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 100
+    },
+    {
+      "title": "并行推送数",
+      "name": "parallelPushes",
+      "type": "integer",
+      "editor": "number",
+      "description": "并行推送数据到输出的线程数。增加此值可加快输出速度。注意:边加载边去重模式下此值固定为 1。",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 50
+    },
+    {
+      "title": "批次大小",
+      "name": "batchSize",
+      "type": "integer",
+      "editor": "number",
+      "description": "每次处理的批次大小。大数据集建议使用较小批次(如 1000-5000)以减少内存峰值。",
+      "default": 5000,
+      "minimum": 100,
+      "maximum": 50000
+    },
+    {
+      "title": "附加文件来源",
+      "name": "appendFileSource",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "在每个数据项中添加 __fileSource__ 字段,记录该数据来自哪个文件。对转换函数和追踪数据来源有用。",
+      "default": false
+    },
+    {
+      "title": "详细日志",
+      "name": "verboseLog",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "开启详细日志输出。大数据集可能导致日志过多,建议仅在调试时开启。",
+      "default": false
+    }
+  ]
+}

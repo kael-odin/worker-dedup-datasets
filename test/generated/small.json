@@ -1,0 +1,902 @@
+[
+  {
+    "id": 1,
+    "name": "Product 1",
+    "price": 671,
+    "category": "Home",
+    "stock": 26,
+    "rating": "4.4",
+    "createdAt": "2025-06-17T23:26:23.409Z"
+  },
+  {
+    "id": 0,
+    "name": "Product 2",
+    "price": 150,
+    "category": "Sports",
+    "stock": 0,
+    "rating": "1.2",
+    "createdAt": "2025-05-24T06:31:03.486Z"
+  },
+  {
+    "id": 3,
+    "name": "Product 3",
+    "price": 871,
+    "category": "Home",
+    "stock": 61,
+    "rating": "3.7",
+    "createdAt": "2025-12-31T15:46:00.307Z"
+  },
+  {
+    "id": 4,
+    "name": "Product 4",
+    "price": 513,
+    "category": "Home",
+    "stock": 50,
+    "rating": "4.2",
+    "createdAt": "2025-04-22T03:30:13.016Z"
+  },
+  {
+    "id": 5,
+    "name": "Product 5",
+    "price": 1026,
+    "category": "Home",
+    "stock": 28,
+    "rating": "3.9",
+    "createdAt": "2025-07-20T20:54:12.339Z"
+  },
+  {
+    "id": 6,
+    "name": "Product 6",
+    "price": 1038,
+    "category": "Electronics",
+    "stock": 39,
+    "rating": "2.0",
+    "createdAt": "2025-06-22T16:59:07.429Z"
+  },
+  {
+    "id": 7,
+    "name": "Product 7",
+    "price": 699,
+    "category": "Clothing",
+    "stock": 43,
+    "rating": "2.0",
+    "createdAt": "2025-12-31T13:55:13.359Z"
+  },
+  {
+    "id": 8,
+    "name": "Product 8",
+    "price": 576,
+    "category": "Books",
+    "stock": 24,
+    "rating": "3.2",
+    "createdAt": "2025-10-09T15:37:31.677Z"
+  },
+  {
+    "id": 4,
+    "name": "Product 9",
+    "price": 1084,
+    "category": "Electronics",
+    "stock": 5,
+    "rating": "1.4",
+    "createdAt": "2025-07-17T05:51:56.116Z"
+  },
+  {
+    "id": 0,
+    "name": "Product 10",
+    "price": 204,
+    "category": "Clothing",
+    "stock": 27,
+    "rating": "4.1",
+    "createdAt": "2025-04-16T15:11:32.834Z"
+  },
+  {
+    "id": 11,
+    "name": "Product 11",
+    "price": 921,
+    "category": "Clothing",
+    "stock": 10,
+    "rating": "2.5",
+    "createdAt": "2025-08-20T15:10:02.404Z"
+  },
+  {
+    "id": 12,
+    "name": "Product 12",
+    "price": 483,
+    "category": "Home",
+    "stock": 88,
+    "rating": "0.3",
+    "createdAt": "2025-08-27T09:22:44.498Z"
+  },
+  {
+    "id": 13,
+    "name": "Product 13",
+    "price": 359,
+    "category": "Sports",
+    "stock": 2,
+    "rating": "1.5",
+    "createdAt": "2025-04-17T05:51:28.278Z"
+  },
+  {
+    "id": 14,
+    "name": "Product 14",
+    "price": 940,
+    "category": "Sports",
+    "stock": 42,
+    "rating": "3.6",
+    "createdAt": "2025-08-16T23:35:43.052Z"
+  },
+  {
+    "id": 15,
+    "name": "Product 15",
+    "price": 401,
+    "category": "Sports",
+    "stock": 48,
+    "rating": "4.5",
+    "createdAt": "2025-04-06T14:49:36.500Z"
+  },
+  {
+    "id": 16,
+    "name": "Product 16",
+    "price": 577,
+    "category": "Electronics",
+    "stock": 89,
+    "rating": "4.5",
+    "createdAt": "2025-04-05T21:05:58.749Z"
+  },
+  {
+    "id": 17,
+    "name": "Product 17",
+    "price": 724,
+    "category": "Electronics",
+    "stock": 98,
+    "rating": "2.9",
+    "createdAt": "2025-07-31T14:46:28.740Z"
+  },
+  {
+    "id": 18,
+    "name": "Product 18",
+    "price": 104,
+    "category": "Clothing",
+    "stock": 84,
+    "rating": "4.5",
+    "createdAt": "2025-10-23T01:49:34.064Z"
+  },
+  {
+    "id": 19,
+    "name": "Product 19",
+    "price": 740,
+    "category": "Electronics",
+    "stock": 82,
+    "rating": "0.9",
+    "createdAt": "2025-11-03T07:36:50.364Z"
+  },
+  {
+    "id": 20,
+    "name": "Product 20",
+    "price": 398,
+    "category": "Books",
+    "stock": 79,
+    "rating": "4.1",
+    "createdAt": "2025-09-28T15:23:43.328Z"
+  },
+  {
+    "id": 21,
+    "name": "Product 21",
+    "price": 439,
+    "category": "Clothing",
+    "stock": 8,
+    "rating": "3.1",
+    "createdAt": "2025-07-24T14:40:57.467Z"
+  },
+  {
+    "id": 15,
+    "name": "Product 22",
+    "price": 438,
+    "category": "Home",
+    "stock": 61,
+    "rating": "4.7",
+    "createdAt": "2025-06-14T19:03:52.494Z"
+  },
+  {
+    "id": 23,
+    "name": "Product 23",
+    "price": 128,
+    "category": "Home",
+    "stock": 80,
+    "rating": "2.9",
+    "createdAt": "2025-10-17T13:52:52.799Z"
+  },
+  {
+    "id": 24,
+    "name": "Product 24",
+    "price": 758,
+    "category": "Sports",
+    "stock": 36,
+    "rating": "1.1",
+    "createdAt": "2025-04-15T10:42:34.910Z"
+  },
+  {
+    "id": 25,
+    "name": "Product 25",
+    "price": 637,
+    "category": "Books",
+    "stock": 55,
+    "rating": "0.7",
+    "createdAt": "2025-07-13T13:54:07.628Z"
+  },
+  {
+    "id": 26,
+    "name": "Product 26",
+    "price": 114,
+    "category": "Clothing",
+    "stock": 34,
+    "rating": "4.6",
+    "createdAt": "2025-04-30T07:38:10.605Z"
+  },
+  {
+    "id": 27,
+    "name": "Product 27",
+    "price": 328,
+    "category": "Electronics",
+    "stock": 7,
+    "rating": "3.4",
+    "createdAt": "2025-12-30T23:50:20.714Z"
+  },
+  {
+    "id": 28,
+    "name": "Product 28",
+    "price": 851,
+    "category": "Sports",
+    "stock": 14,
+    "rating": "4.2",
+    "createdAt": "2025-12-29T01:14:39.674Z"
+  },
+  {
+    "id": 12,
+    "name": "Product 29",
+    "price": 869,
+    "category": "Electronics",
+    "stock": 90,
+    "rating": "2.7",
+    "createdAt": "2025-11-23T06:46:37.465Z"
+  },
+  {
+    "id": 30,
+    "name": "Product 30",
+    "price": 886,
+    "category": "Sports",
+    "stock": 67,
+    "rating": "3.6",
+    "createdAt": "2026-03-18T03:27:19.050Z"
+  },
+  {
+    "id": 31,
+    "name": "Product 31",
+    "price": 680,
+    "category": "Clothing",
+    "stock": 43,
+    "rating": "2.6",
+    "createdAt": "2025-08-26T00:04:30.162Z"
+  },
+  {
+    "id": 32,
+    "name": "Product 32",
+    "price": 139,
+    "category": "Electronics",
+    "stock": 65,
+    "rating": "2.4",
+    "createdAt": "2025-07-10T22:11:26.388Z"
+  },
+  {
+    "id": 33,
+    "name": "Product 33",
+    "price": 392,
+    "category": "Electronics",
+    "stock": 9,
+    "rating": "0.5",
+    "createdAt": "2025-06-09T05:09:07.311Z"
+  },
+  {
+    "id": 34,
+    "name": "Product 34",
+    "price": 713,
+    "category": "Electronics",
+    "stock": 36,
+    "rating": "1.1",
+    "createdAt": "2025-11-17T11:47:40.963Z"
+  },
+  {
+    "id": 35,
+    "name": "Product 35",
+    "price": 400,
+    "category": "Electronics",
+    "stock": 21,
+    "rating": "0.8",
+    "createdAt": "2026-03-28T22:25:24.802Z"
+  },
+  {
+    "id": 10,
+    "name": "Product 36",
+    "price": 356,
+    "category": "Electronics",
+    "stock": 84,
+    "rating": "0.7",
+    "createdAt": "2025-12-13T21:10:04.624Z"
+  },
+  {
+    "id": 37,
+    "name": "Product 37",
+    "price": 186,
+    "category": "Sports",
+    "stock": 47,
+    "rating": "3.4",
+    "createdAt": "2025-11-25T22:51:15.899Z"
+  },
+  {
+    "id": 38,
+    "name": "Product 38",
+    "price": 368,
+    "category": "Clothing",
+    "stock": 45,
+    "rating": "3.3",
+    "createdAt": "2025-07-26T20:44:32.782Z"
+  },
+  {
+    "id": 39,
+    "name": "Product 39",
+    "price": 994,
+    "category": "Clothing",
+    "stock": 54,
+    "rating": "3.3",
+    "createdAt": "2025-10-03T04:14:47.490Z"
+  },
+  {
+    "id": 40,
+    "name": "Product 40",
+    "price": 733,
+    "category": "Sports",
+    "stock": 55,
+    "rating": "2.0",
+    "createdAt": "2025-04-15T08:00:38.776Z"
+  },
+  {
+    "id": 41,
+    "name": "Product 41",
+    "price": 354,
+    "category": "Sports",
+    "stock": 72,
+    "rating": "4.2",
+    "createdAt": "2025-06-17T20:31:30.049Z"
+  },
+  {
+    "id": 42,
+    "name": "Product 42",
+    "price": 508,
+    "category": "Clothing",
+    "stock": 37,
+    "rating": "0.4",
+    "createdAt": "2026-01-19T17:24:18.679Z"
+  },
+  {
+    "id": 43,
+    "name": "Product 43",
+    "price": 306,
+    "category": "Clothing",
+    "stock": 85,
+    "rating": "3.7",
+    "createdAt": "2026-01-06T00:25:49.341Z"
+  },
+  {
+    "id": 44,
+    "name": "Product 44",
+    "price": 865,
+    "category": "Clothing",
+    "stock": 76,
+    "rating": "2.3",
+    "createdAt": "2025-04-01T15:45:35.625Z"
+  },
+  {
+    "id": 45,
+    "name": "Product 45",
+    "price": 305,
+    "category": "Sports",
+    "stock": 13,
+    "rating": "4.1",
+    "createdAt": "2025-09-28T11:40:55.577Z"
+  },
+  {
+    "id": 46,
+    "name": "Product 46",
+    "price": 294,
+    "category": "Sports",
+    "stock": 67,
+    "rating": "3.1",
+    "createdAt": "2025-05-17T20:26:40.019Z"
+  },
+  {
+    "id": 47,
+    "name": "Product 47",
+    "price": 496,
+    "category": "Clothing",
+    "stock": 12,
+    "rating": "1.2",
+    "createdAt": "2026-03-26T00:04:56.410Z"
+  },
+  {
+    "id": 48,
+    "name": "Product 48",
+    "price": 895,
+    "category": "Sports",
+    "stock": 25,
+    "rating": "3.0",
+    "createdAt": "2025-06-27T00:12:33.835Z"
+  },
+  {
+    "id": 24,
+    "name": "Product 49",
+    "price": 340,
+    "category": "Home",
+    "stock": 33,
+    "rating": "3.4",
+    "createdAt": "2025-09-07T17:35:38.254Z"
+  },
+  {
+    "id": 41,
+    "name": "Product 50",
+    "price": 711,
+    "category": "Books",
+    "stock": 18,
+    "rating": "0.9",
+    "createdAt": "2025-10-09T01:01:26.069Z"
+  },
+  {
+    "id": 51,
+    "name": "Product 51",
+    "price": 557,
+    "category": "Books",
+    "stock": 11,
+    "rating": "0.1",
+    "createdAt": "2025-12-23T04:11:29.983Z"
+  },
+  {
+    "id": 52,
+    "name": "Product 52",
+    "price": 816,
+    "category": "Electronics",
+    "stock": 10,
+    "rating": "3.0",
+    "createdAt": "2026-01-19T14:46:03.215Z"
+  },
+  {
+    "id": 31,
+    "name": "Product 53",
+    "price": 198,
+    "category": "Sports",
+    "stock": 55,
+    "rating": "3.1",
+    "createdAt": "2025-09-04T08:42:16.215Z"
+  },
+  {
+    "id": 54,
+    "name": "Product 54",
+    "price": 774,
+    "category": "Home",
+    "stock": 28,
+    "rating": "3.4",
+    "createdAt": "2025-04-12T10:53:21.396Z"
+  },
+  {
+    "id": 55,
+    "name": "Product 55",
+    "price": 313,
+    "category": "Clothing",
+    "stock": 47,
+    "rating": "0.0",
+    "createdAt": "2025-12-03T20:38:05.122Z"
+  },
+  {
+    "id": 56,
+    "name": "Product 56",
+    "price": 500,
+    "category": "Electronics",
+    "stock": 81,
+    "rating": "1.4",
+    "createdAt": "2025-06-08T10:37:22.455Z"
+  },
+  {
+    "id": 57,
+    "name": "Product 57",
+    "price": 877,
+    "category": "Sports",
+    "stock": 48,
+    "rating": "1.2",
+    "createdAt": "2025-05-22T23:31:56.094Z"
+  },
+  {
+    "id": 58,
+    "name": "Product 58",
+    "price": 1075,
+    "category": "Home",
+    "stock": 29,
+    "rating": "1.9",
+    "createdAt": "2026-03-08T16:52:49.080Z"
+  },
+  {
+    "id": 59,
+    "name": "Product 59",
+    "price": 184,
+    "category": "Books",
+    "stock": 44,
+    "rating": "3.4",
+    "createdAt": "2025-11-20T02:49:24.955Z"
+  },
+  {
+    "id": 57,
+    "name": "Product 60",
+    "price": 947,
+    "category": "Home",
+    "stock": 68,
+    "rating": "3.7",
+    "createdAt": "2025-10-30T20:39:36.289Z"
+  },
+  {
+    "id": 61,
+    "name": "Product 61",
+    "price": 858,
+    "category": "Sports",
+    "stock": 48,
+    "rating": "1.4",
+    "createdAt": "2025-10-03T23:02:44.165Z"
+  },
+  {
+    "id": 62,
+    "name": "Product 62",
+    "price": 513,
+    "category": "Clothing",
+    "stock": 98,
+    "rating": "5.0",
+    "createdAt": "2025-05-17T22:10:18.295Z"
+  },
+  {
+    "id": 63,
+    "name": "Product 63",
+    "price": 857,
+    "category": "Home",
+    "stock": 83,
+    "rating": "3.3",
+    "createdAt": "2025-04-27T22:11:56.132Z"
+  },
+  {
+    "id": 64,
+    "name": "Product 64",
+    "price": 381,
+    "category": "Books",
+    "stock": 64,
+    "rating": "3.5",
+    "createdAt": "2025-05-13T19:17:48.184Z"
+  },
+  {
+    "id": 65,
+    "name": "Product 65",
+    "price": 235,
+    "category": "Clothing",
+    "stock": 28,
+    "rating": "1.2",
+    "createdAt": "2025-08-13T01:13:21.710Z"
+  },
+  {
+    "id": 58,
+    "name": "Product 66",
+    "price": 466,
+    "category": "Sports",
+    "stock": 36,
+    "rating": "1.3",
+    "createdAt": "2025-11-24T00:48:26.753Z"
+  },
+  {
+    "id": 67,
+    "name": "Product 67",
+    "price": 170,
+    "category": "Books",
+    "stock": 15,
+    "rating": "4.7",
+    "createdAt": "2025-05-15T02:44:00.340Z"
+  },
+  {
+    "id": 68,
+    "name": "Product 68",
+    "price": 849,
+    "category": "Books",
+    "stock": 79,
+    "rating": "1.9",
+    "createdAt": "2026-01-02T05:35:23.446Z"
+  },
+  {
+    "id": 24,
+    "name": "Product 69",
+    "price": 1088,
+    "category": "Electronics",
+    "stock": 19,
+    "rating": "0.3",
+    "createdAt": "2026-02-04T17:30:04.768Z"
+  },
+  {
+    "id": 20,
+    "name": "Product 70",
+    "price": 1061,
+    "category": "Books",
+    "stock": 31,
+    "rating": "0.1",
+    "createdAt": "2025-04-07T10:39:41.186Z"
+  },
+  {
+    "id": 71,
+    "name": "Product 71",
+    "price": 739,
+    "category": "Sports",
+    "stock": 84,
+    "rating": "2.6",
+    "createdAt": "2025-04-09T00:37:56.265Z"
+  },
+  {
+    "id": 72,
+    "name": "Product 72",
+    "price": 705,
+    "category": "Clothing",
+    "stock": 59,
+    "rating": "4.4",
+    "createdAt": "2025-09-02T00:07:16.512Z"
+  },
+  {
+    "id": 73,
+    "name": "Product 73",
+    "price": 671,
+    "category": "Sports",
+    "stock": 27,
+    "rating": "4.5",
+    "createdAt": "2026-03-09T23:50:55.271Z"
+  },
+  {
+    "id": 74,
+    "name": "Product 74",
+    "price": 1017,
+    "category": "Home",
+    "stock": 25,
+    "rating": "0.5",
+    "createdAt": "2026-01-26T16:37:22.849Z"
+  },
+  {
+    "id": 75,
+    "name": "Product 75",
+    "price": 481,
+    "category": "Sports",
+    "stock": 50,
+    "rating": "0.0",
+    "createdAt": "2025-07-21T08:24:10.727Z"
+  },
+  {
+    "id": 76,
+    "name": "Product 76",
+    "price": 744,
+    "category": "Clothing",
+    "stock": 54,
+    "rating": "2.2",
+    "createdAt": "2025-11-16T03:20:58.721Z"
+  },
+  {
+    "id": 77,
+    "name": "Product 77",
+    "price": 157,
+    "category": "Home",
+    "stock": 76,
+    "rating": "4.2",
+    "createdAt": "2026-03-13T12:42:28.854Z"
+  },
+  {
+    "id": 78,
+    "name": "Product 78",
+    "price": 383,
+    "category": "Electronics",
+    "stock": 3,
+    "rating": "1.3",
+    "createdAt": "2025-12-10T06:21:14.560Z"
+  },
+  {
+    "id": 79,
+    "name": "Product 79",
+    "price": 937,
+    "category": "Books",
+    "stock": 0,
+    "rating": "0.1",
+    "createdAt": "2025-06-17T01:44:06.970Z"
+  },
+  {
+    "id": 80,
+    "name": "Product 80",
+    "price": 281,
+    "category": "Clothing",
+    "stock": 57,
+    "rating": "1.6",
+    "createdAt": "2025-10-27T03:27:17.686Z"
+  },
+  {
+    "id": 11,
+    "name": "Product 81",
+    "price": 378,
+    "category": "Sports",
+    "stock": 86,
+    "rating": "3.3",
+    "createdAt": "2025-06-24T02:22:37.764Z"
+  },
+  {
+    "id": 19,
+    "name": "Product 82",
+    "price": 893,
+    "category": "Sports",
+    "stock": 62,
+    "rating": "3.8",
+    "createdAt": "2026-01-13T07:02:58.670Z"
+  },
+  {
+    "id": 83,
+    "name": "Product 83",
+    "price": 382,
+    "category": "Books",
+    "stock": 53,
+    "rating": "3.0",
+    "createdAt": "2026-01-11T21:31:56.437Z"
+  },
+  {
+    "id": 84,
+    "name": "Product 84",
+    "price": 444,
+    "category": "Electronics",
+    "stock": 6,
+    "rating": "3.7",
+    "createdAt": "2026-02-03T21:35:48.835Z"
+  },
+  {
+    "id": 85,
+    "name": "Product 85",
+    "price": 280,
+    "category": "Home",
+    "stock": 40,
+    "rating": "0.7",
+    "createdAt": "2026-01-29T17:07:59.793Z"
+  },
+  {
+    "id": 86,
+    "name": "Product 86",
+    "price": 204,
+    "category": "Electronics",
+    "stock": 94,
+    "rating": "3.0",
+    "createdAt": "2025-07-12T18:34:03.690Z"
+  },
+  {
+    "id": 87,
+    "name": "Product 87",
+    "price": 488,
+    "category": "Sports",
+    "stock": 53,
+    "rating": "0.7",
+    "createdAt": "2025-12-03T09:33:14.976Z"
+  },
+  {
+    "id": 71,
+    "name": "Product 88",
+    "price": 119,
+    "category": "Clothing",
+    "stock": 86,
+    "rating": "0.5",
+    "createdAt": "2025-10-20T10:06:45.262Z"
+  },
+  {
+    "id": 89,
+    "name": "Product 89",
+    "price": 223,
+    "category": "Clothing",
+    "stock": 33,
+    "rating": "1.0",
+    "createdAt": "2025-11-10T14:47:25.214Z"
+  },
+  {
+    "id": 28,
+    "name": "Product 90",
+    "price": 275,
+    "category": "Home",
+    "stock": 80,
+    "rating": "4.5",
+    "createdAt": "2025-04-08T22:40:00.509Z"
+  },
+  {
+    "id": 91,
+    "name": "Product 91",
+    "price": 820,
+    "category": "Clothing",
+    "stock": 41,
+    "rating": "0.8",
+    "createdAt": "2025-12-25T18:22:53.762Z"
+  },
+  {
+    "id": 92,
+    "name": "Product 92",
+    "price": 1032,
+    "category": "Clothing",
+    "stock": 97,
+    "rating": "3.4",
+    "createdAt": "2026-03-13T00:46:44.268Z"
+  },
+  {
+    "id": 93,
+    "name": "Product 93",
+    "price": 324,
+    "category": "Home",
+    "stock": 8,
+    "rating": "4.4",
+    "createdAt": "2026-02-24T23:33:26.883Z"
+  },
+  {
+    "id": 94,
+    "name": "Product 94",
+    "price": 1093,
+    "category": "Clothing",
+    "stock": 74,
+    "rating": "3.8",
+    "createdAt": "2025-04-26T03:16:30.463Z"
+  },
+  {
+    "id": 95,
+    "name": "Product 95",
+    "price": 135,
+    "category": "Books",
+    "stock": 42,
+    "rating": "1.7",
+    "createdAt": "2026-02-24T17:17:25.718Z"
+  },
+  {
+    "id": 96,
+    "name": "Product 96",
+    "price": 717,
+    "category": "Home",
+    "stock": 78,
+    "rating": "3.3",
+    "createdAt": "2026-01-23T18:41:10.246Z"
+  },
+  {
+    "id": 97,
+    "name": "Product 97",
+    "price": 264,
+    "category": "Sports",
+    "stock": 31,
+    "rating": "4.1",
+    "createdAt": "2025-09-17T17:13:44.288Z"
+  },
+  {
+    "id": 74,
+    "name": "Product 98",
+    "price": 144,
+    "category": "Clothing",
+    "stock": 8,
+    "rating": "1.7",
+    "createdAt": "2025-04-09T11:00:36.733Z"
+  },
+  {
+    "id": 99,
+    "name": "Product 99",
+    "price": 761,
+    "category": "Electronics",
+    "stock": 93,
+    "rating": "1.4",
+    "createdAt": "2026-03-29T23:43:54.971Z"
+  },
+  {
+    "id": 100,
+    "name": "Product 100",
+    "price": 982,
+    "category": "Sports",
+    "stock": 79,
+    "rating": "2.2",
+    "createdAt": "2025-09-13T00:01:46.753Z"
+  }
+]

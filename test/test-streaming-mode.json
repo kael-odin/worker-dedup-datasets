@@ -1,0 +1,13 @@
+{
+  "inputFiles": [
+    { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data1.json" },
+    { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data2.json" },
+    { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data3.jsonl" }
+  ],
+  "inputFormat": "json",
+  "fields": ["id"],
+  "output": "unique-items",
+  "mode": "dedup-as-loading",
+  "batchSize": 100,
+  "verboseLog": true
+}

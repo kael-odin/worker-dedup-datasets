@@ -1,7 +1,18 @@
 {
   "description": "数据集去重工具 | Dataset Deduplication Tool",
-  "b": "dataSourceType",
+  "b": "fields",
   "properties": [
+    {
+      "title": "去重字段 | Dedup Fields",
+      "name": "fields",
+      "type": "array",
+      "editor": "stringList",
+      "description": "去重字段名称 | Field names for deduplication",
+      "default": [
+        { "string": "id" }
+      ],
+      "required": true
+    },
     {
       "title": "数据来源 | Data Source",
       "name": "dataSourceType",
@@ -12,8 +23,7 @@
       "options": [
         { "label": "直接输入 | Direct Input", "value": "direct-input" },
         { "label": "网络URL | Network URL", "value": "network-url" }
-      ],
-      "required": true
+      ]
     },
     {
       "title": "输入数据 | Input Data",
@@ -30,17 +40,6 @@
       "editor": "requestList",
       "description": "数据文件URL列表 | Data file URL list",
       "default": []
-    },
-    {
-      "title": "去重字段 | Dedup Fields",
-      "name": "fields",
-      "type": "array",
-      "editor": "stringList",
-      "description": "去重字段名称 | Field names for deduplication",
-      "default": [
-        { "string": "id" }
-      ],
-      "required": true
     },
     {
       "title": "输出内容 | Output",

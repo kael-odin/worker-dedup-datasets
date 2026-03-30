@@ -1,0 +1,162 @@
+[
+  {
+    "name": "示例1: 基础去重（最常用）",
+    "description": "合并3个销售数据文件，按商品ID去重",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/jan_sales.json" },
+        { "url": "file:///d:/data/feb_sales.json" },
+        { "url": "file:///d:/data/mar_sales.json" }
+      ],
+      "fields": ["product_id"],
+      "output": "unique-items",
+      "mode": "dedup-after-load"
+    }
+  },
+  {
+    "name": "示例2: 多字段组合去重",
+    "description": "按商品名称+价格组合去重，避免同名不同价的商品被误删",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/products.json" }
+      ],
+      "fields": ["name", "price"],
+      "output": "unique-items",
+      "mode": "dedup-after-load"
+    }
+  },
+  {
+    "name": "示例3: 大数据集处理（节省内存）",
+    "description": "处理100万条用户数据，使用边加载边去重模式",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/users_part1.jsonl" },
+        { "url": "file:///d:/data/users_part2.jsonl" },
+        { "url": "file:///d:/data/users_part3.jsonl" }
+      ],
+      "inputFormat": "jsonl",
+      "fields": ["email"],
+      "fieldsToLoad": ["email", "name", "signup_date"],
+      "output": "unique-items",
+      "mode": "dedup-as-loading",
+      "batchSize": 2000
+    }
+  },
+  {
+    "name": "示例4: 数据质量分析",
+    "description": "查找数据中的重复项，分析数据质量问题",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/database_export.json" }
+      ],
+      "fields": ["id"],
+      "output": "duplicate-items",
+      "appendFileSource": true,
+      "verboseLog": true
+    }
+  },
+  {
+    "name": "示例5: 数据过滤+转换（高级）",
+    "description": "只保留价格在100-1000元的商品，并添加序号",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/all_products.json" }
+      ],
+      "fields": ["id"],
+      "customInputData": {
+        "minPrice": 100,
+        "maxPrice": 1000
+      },
+      "preDedupTransformFunction": "async (items, { customInputData }) => {\n  const { minPrice, maxPrice } = customInputData;\n  return items.filter(item => item.price >= minPrice && item.price <= maxPrice);\n}",
+      "postDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.map((item, index) => ({\n    rank: index + 1,\n    ...item\n  }));\n}"
+    }
+  },
+  {
+    "name": "示例6: 仅合并数据，不去重",
+    "description": "简单合并多个文件，保留所有数据",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/file1.json" },
+        { "url": "file:///d:/data/file2.json" },
+        { "url": "file:///d:/data/file3.json" }
+      ],
+      "fields": [],
+      "output": "unique-items"
+    }
+  },
+  {
+    "name": "示例7: 数据标准化后去重",
+    "description": "统一邮箱格式后再去重，避免大小写或空格导致的误判",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/leads.json" }
+      ],
+      "fields": ["email"],
+      "preDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.map(item => ({\n    ...item,\n    email: item.email.toLowerCase().trim()\n  }));\n}"
+    }
+  },
+  {
+    "name": "示例8: 排序后去重",
+    "description": "按价格降序排序后，保留每个ID的最新（最贵）记录",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/data/price_history.json" }
+      ],
+      "fields": ["product_id"],
+      "preDedupTransformFunction": "async (items, { customInputData }) => {\n  return items.sort((a, b) => b.price - a.price);\n}",
+      "mode": "dedup-after-load"
+    }
+  },
+  {
+    "name": "示例9: 本地测试 - 基础功能",
+    "description": "用于本地开发测试的基础配置",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data1.json" },
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data2.json" },
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data3.jsonl" }
+      ],
+      "inputFormat": "json",
+      "fields": ["id"],
+      "output": "unique-items",
+      "mode": "dedup-after-load",
+      "parallelLoads": 5,
+      "parallelPushes": 3,
+      "batchSize": 100,
+      "verboseLog": true,
+      "appendFileSource": true
+    }
+  },
+  {
+    "name": "示例10: 本地测试 - 查找重复项",
+    "description": "用于本地开发测试，查找重复数据",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data1.json" },
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data2.json" }
+      ],
+      "inputFormat": "json",
+      "fields": ["id"],
+      "output": "duplicate-items",
+      "mode": "dedup-after-load",
+      "verboseLog": true
+    }
+  },
+  {
+    "name": "示例11: 本地测试 - 边加载边去重",
+    "description": "用于本地开发测试，测试边加载边去重模式",
+    "input": {
+      "inputFiles": [
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data1.json" },
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data2.json" },
+        { "url": "file:///d:/kael_odin/kael_study/worker-dedup-datasets/test/data3.jsonl" }
+      ],
+      "inputFormat": "json",
+      "fields": ["id"],
+      "output": "unique-items",
+      "mode": "dedup-as-loading",
+      "batchSize": 100,
+      "verboseLog": true
+    }
+  }
+]

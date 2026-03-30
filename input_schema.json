@@ -22,7 +22,7 @@
       "type": "string",
       "editor": "textarea",
       "description": "直接粘贴 JSON 数组数据。示例格式：\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]\n\nPaste JSON array data directly. Example format:\n[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200}\n]",
-      "default": "[]"
+      "default": "[\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 2, \"name\": \"Product B\", \"price\": 200},\n  {\"id\": 1, \"name\": \"Product A\", \"price\": 100},\n  {\"id\": 3, \"name\": \"Product C\", \"price\": 150}\n]"
     },
     {
       "title": "网络数据URL列表 / Network Data URLs",
@@ -30,7 +30,11 @@
       "type": "array",
       "editor": "requestList",
       "description": "网络可访问的数据文件URL列表。支持 HTTP/HTTPS 协议，JSON 和 JSONL 格式。\n\nList of network-accessible data file URLs. Supports HTTP/HTTPS protocols, JSON and JSONL formats.",
-      "default": []
+      "default": [
+        {
+          "url": "https://raw.githubusercontent.com/kael-odin/worker-dedup-datasets/main/test/data1.json"
+        }
+      ]
     },
     {
       "title": "Cafe Dataset ID 列表 / Cafe Dataset IDs",
@@ -46,7 +50,7 @@
       "type": "array",
       "editor": "stringList",
       "description": "用于判断重复的字段名称列表。多个字段组合判断，字段越多去重越严格。例如：['id'] 表示按 id 去重，['name','price'] 表示按 name+price 组合去重。留空则不进行去重。\n\nList of field names for deduplication. Multiple fields are combined, more fields means stricter deduplication. Example: ['id'] for dedup by id, ['name','price'] for dedup by name+price combination. Leave empty to skip deduplication.\n\n⚠️ 注意：字段名必须与数据中的字段名完全一致（区分大小写）。如果字段不存在，将导致错误。\n\n⚠️ Note: Field names must exactly match the field names in the data (case-sensitive). If the field does not exist, it will cause an error.",
-      "default": [],
+      "default": ["id"],
       "required": true
     },
     {

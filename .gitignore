@@ -1,18 +1,17 @@
 # Dependencies
 node_modules/
 
-# Output files
+# Output
 outputs/
-test/outputs/
+test-outputs/
 
-# State files
-/tmp/
+# State
+.state/
 
 # Logs
 *.log
-logs.txt
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
@@ -21,14 +20,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-*~
 
-# Environment
-.env
-.env.local
-
-# Package locks
-package-lock.json
-
-# Test coverage
-coverage/
+# Temp
+*.tmp
+temp-*

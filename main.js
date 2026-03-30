@@ -89,16 +89,26 @@ async function main() {
             throw new Error(`解析 customInputData 失败: ${error.message}。请确保是有效的 JSON 对象格式，例如: {"minPrice": 100}`);
         }
 
-        // 处理 stringList 字段格式(平台会将单项展开)
+        // 处理 stringList 字段格式(平台会将单项展开或保持对象数组)
         let parsedFields = fields;
         if (!Array.isArray(fields)) {
+            // 单项展开情况：fields 字段消失，string 出现在顶层
             if (inputJson.string) {
-                // 单项展开情况
                 parsedFields = [inputJson.string];
             } else {
                 parsedFields = [];
             }
+        } else {
+            // 正常情况：fields 是对象数组 [{ string: "id" }]
+            parsedFields = fields.map(item => {
+                if (typeof item === 'object' && item.string) {
+                    return item.string;
+                }
+                return item;
+            });
         }
+
+        await cafesdk.log.debug(`解析后的去重字段: ${JSON.stringify(parsedFields)}`);
 
         let parsedFieldsToLoad = fieldsToLoad;
         if (!Array.isArray(fieldsToLoad)) {
@@ -107,6 +117,13 @@ async function main() {
             } else {
                 parsedFieldsToLoad = [];
             }
+        } else {
+            parsedFieldsToLoad = fieldsToLoad.map(item => {
+                if (typeof item === 'object' && item.string) {
+                    return item.string;
+                }
+                return item;
+            });
         }
 
         // 处理 datasetIds 的 stringList 格式
@@ -118,6 +135,13 @@ async function main() {
             } else {
                 parsedDatasetIds = [];
             }
+        } else {
+            parsedDatasetIds = datasetIds.map(item => {
+                if (typeof item === 'object' && item.string) {
+                    return item.string;
+                }
+                return item;
+            });
         }
 
         // 验证数据源

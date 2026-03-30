@@ -108,8 +108,10 @@ module.exports = async ({
     allItems = await preDedupTransformFn(allItems, { customInputData });
 
     // 去重
-    if (verboseLog) {
-        await cafesdk.log.info(`开始去重,去重字段: ${fields.join(', ') || '(无)'}`);
+    await cafesdk.log.info(`开始去重,去重字段: ${JSON.stringify(fields)}`);
+    await cafesdk.log.debug(`fields 类型: ${typeof fields}, 是否数组: ${Array.isArray(fields)}`);
+    if (fields && fields.length > 0) {
+        await cafesdk.log.debug(`第一个字段: ${JSON.stringify(fields[0])}, 类型: ${typeof fields[0]}`);
     }
     let outputItems = dedup({ items: allItems, output, fields, dedupSet, nullAsUnique });
 

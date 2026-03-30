@@ -1,5 +1,5 @@
 {
-  "description": "数据集去重工具 | Dataset Deduplication Tool",
+  "description": "数据集去重与合并工具 - 支持多种数据导入方式（直接输入/URL/Dataset），基于字段组合去重，支持大数据集处理。Dataset Deduplication & Merge Tool - Multiple data sources, field-based dedup, large dataset support.",
   "b": "fields",
   "properties": [
     {
@@ -7,22 +7,23 @@
       "name": "fields",
       "type": "array",
       "editor": "stringList",
-      "description": "去重字段名称 | Field names for deduplication",
+      "description": "用于判断重复的字段名称列表 | Field names for deduplication. Example: ['id'] for dedup by id",
       "default": [
         { "string": "id" }
       ],
       "required": true
     },
     {
-      "title": "数据来源 | Data Source",
+      "title": "数据来源类型 | Data Source Type",
       "name": "dataSourceType",
       "type": "string",
       "editor": "select",
-      "description": "选择数据来源类型 | Select data source type",
+      "description": "选择数据来源 | Select data source",
       "default": "direct-input",
       "options": [
         { "label": "直接输入 | Direct Input", "value": "direct-input" },
-        { "label": "网络URL | Network URL", "value": "network-url" }
+        { "label": "网络URL | Network URL", "value": "network-url" },
+        { "label": "Cafe Dataset", "value": "cafe-dataset" }
       ]
     },
     {
@@ -34,36 +35,147 @@
       "required": false
     },
     {
-      "title": "数据URL | Data URLs",
+      "title": "数据URL列表 | Data URLs",
       "name": "inputUrls",
       "type": "array",
       "editor": "requestList",
       "description": "数据文件URL列表 | Data file URL list",
+      "default": [
+        {
+          "url": "https://raw.githubusercontent.com/kael-odin/worker-dedup-datasets/main/test/data1.json"
+        }
+      ]
+    },
+    {
+      "title": "Dataset ID列表 | Dataset IDs",
+      "name": "datasetIds",
+      "type": "array",
+      "editor": "stringList",
+      "description": "Cafe Dataset ID列表 | Cafe Dataset ID list",
       "default": []
     },
     {
-      "title": "输出内容 | Output",
+      "title": "输入文件格式 | Input Format",
+      "name": "inputFormat",
+      "type": "string",
+      "editor": "select",
+      "description": "输入数据格式 | Input data format",
+      "default": "json",
+      "options": [
+        { "label": "JSON (数组格式 | Array)", "value": "json" },
+        { "label": "JSONL (每行一个JSON)", "value": "jsonl" }
+      ]
+    },
+    {
+      "title": "输出内容 | Output Content",
       "name": "output",
       "type": "string",
       "editor": "select",
       "description": "输出类型 | Output type",
       "default": "unique-items",
       "options": [
-        { "label": "唯一项 | Unique", "value": "unique-items" },
-        { "label": "重复项 | Duplicates", "value": "duplicate-items" }
+        { "label": "唯一项(去重后) | Unique Items", "value": "unique-items" },
+        { "label": "重复项 | Duplicate Items", "value": "duplicate-items" },
+        { "label": "仅统计 | Statistics Only", "value": "nothing" }
       ]
     },
     {
-      "title": "处理模式 | Mode",
+      "title": "处理模式 | Processing Mode",
       "name": "mode",
       "type": "string",
       "editor": "select",
-      "description": "去重模式 | Dedup mode",
+      "description": "去重处理模式 | Dedup mode. Large datasets (>100K) use 'As Loading'",
       "default": "dedup-after-load",
       "options": [
         { "label": "先加载后去重 | After Load", "value": "dedup-after-load" },
         { "label": "边加载边去重 | As Loading", "value": "dedup-as-loading" }
       ]
+    },
+    {
+      "title": "仅加载指定字段 | Load Fields Only",
+      "name": "fieldsToLoad",
+      "type": "array",
+      "editor": "stringList",
+      "description": "仅加载指定字段以减少内存 | Load only specified fields",
+      "default": []
+    },
+    {
+      "title": "去重前转换函数 | Pre-Dedup Transform",
+      "name": "preDedupTransformFunction",
+      "type": "string",
+      "editor": "textarea",
+      "description": "去重前自定义转换函数 | Custom transform function before dedup",
+      "required": false
+    },
+    {
+      "title": "去重后转换函数 | Post-Dedup Transform",
+      "name": "postDedupTransformFunction",
+      "type": "string",
+      "editor": "textarea",
+      "description": "去重后自定义转换函数 | Custom transform function after dedup",
+      "required": false
+    },
+    {
+      "title": "自定义输入数据 | Custom Input Data",
+      "name": "customInputData",
+      "type": "string",
+      "editor": "textarea",
+      "description": "传递给转换函数的自定义数据(JSON格式) | Custom data for transform functions (JSON)",
+      "required": false
+    },
+    {
+      "title": "Null值视为唯一 | Treat Null as Unique",
+      "name": "nullAsUnique",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "null/undefined值视为唯一值 | Treat null/undefined as unique",
+      "default": false
+    },
+    {
+      "title": "并行加载数 | Parallel Loads",
+      "name": "parallelLoads",
+      "type": "integer",
+      "editor": "number",
+      "description": "并行加载数据源的线程数 | Parallel load threads",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 100
+    },
+    {
+      "title": "并行推送数 | Parallel Pushes",
+      "name": "parallelPushes",
+      "type": "integer",
+      "editor": "number",
+      "description": "并行推送数据的线程数 | Parallel push threads",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 50
+    },
+    {
+      "title": "批次大小 | Batch Size",
+      "name": "batchSize",
+      "type": "integer",
+      "editor": "number",
+      "description": "每次处理的批次大小 | Batch size per processing",
+      "default": 5000,
+      "minimum": 100,
+      "maximum": 50000
+    },
+    {
+      "title": "附加文件来源 | Append File Source",
+      "name": "appendFileSource",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "添加__fileSource__字段记录数据来源 | Add __fileSource__ field",
+      "default": false
+    },
+    {
+      "title": "详细日志 | Verbose Log",
+      "name": "verboseLog",
+      "type": "boolean",
+      "editor": "switch",
+      "description": "开启详细日志输出 | Enable verbose logging",
+      "default": false
     }
   ]
 }

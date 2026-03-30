@@ -201,10 +201,14 @@ async function loadState(key) {
  */
 function dedup({ items, output, fields, dedupSet, nullAsUnique = false }) {
     if (!fields || fields.length === 0) {
+        console.log('[DEDUP] 警告: fields 为空，跳过去重');
         return items;
     }
 
+    console.log(`[DEDUP] 开始去重，字段: ${JSON.stringify(fields)}, 数据量: ${items.length}`);
     const outputItems = [];
+    let processedCount = 0;
+
     for (const item of items) {
         const key = fields
             .map((field) => {
@@ -216,9 +220,15 @@ function dedup({ items, output, fields, dedupSet, nullAsUnique = false }) {
                 return typeof value === 'object' ? JSON.stringify(value) : value;
             })
             .join('');
-        
+
+        if (processedCount < 3) {
+            console.log(`[DEDUP] 数据 #${processedCount}: key="${key}", fields=${JSON.stringify(fields)}`);
+            console.log(`[DEDUP] item[${fields[0]}]=${item[fields[0]]}`);
+        }
+        processedCount++;
+
         const hasKey = dedupSet.has(key);
-        
+
         if (output === 'unique-items') {
             if (!hasKey) {
                 outputItems.push(item);
@@ -229,12 +239,13 @@ function dedup({ items, output, fields, dedupSet, nullAsUnique = false }) {
                 outputItems.push(enhancedItem);
             }
         }
-        
+
         if (!hasKey) {
             dedupSet.add(key);
         }
     }
 
+    console.log(`[DEDUP] 完成，去重集大小: ${dedupSet.size}, 输出: ${outputItems.length}`);
     return outputItems;
 }
 
